@@ -3,19 +3,18 @@ package day03p2
 import java.io.File
 
 fun main() {
-    var program = ""
-    File(object {}.javaClass.getResource("/day03.txt").toURI()).forEachLine {
-        program += it
-    }
+    var program = File(object {}.javaClass.getResource("/day03.txt").toURI())
+        .readLines()
+        .joinToString()
     println(evaluateLine(program))
 }
 
+private const val REGEXP = "mul\\(([0-9]+),([0-9]+)\\)|do\\(\\)|don't\\(\\)"
+
 fun evaluateLine(line: String): Int {
-    val regex = "mul\\(([0-9]+),([0-9]+)\\)|do\\(\\)|don't\\(\\)".toRegex()
-    val matches = regex.findAll(line)
     var enabled = true
     var sum = 0
-    for (match in matches) {
+    for (match in REGEXP.toRegex().findAll(line)) {
         val value = match.value
         if (value.startsWith("mul")) {
             if (enabled) {
