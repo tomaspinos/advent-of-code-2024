@@ -20,41 +20,47 @@ fun searchFile(name: String) {
     val width = characters[0].size
     val height = characters.size
 
-    val vectors = ArrayList<Vector>()
+    var leftToRightCount = 0
+    var topToBottomCount = 0
+    var diagDownRightCount = 0
+    var diagDownLeftCount = 0
 
     // left to right
     for (y in 0..height - 1) {
-        vectors.add(Vector(0, y, leftToRight, characters))
+        leftToRightCount += Vector(0, y, leftToRight, characters).search()
     }
 
     // top to bottom
     for (x in 0..width - 1) {
-        vectors.add(Vector(x, 0, topToBottom, characters))
+        topToBottomCount += Vector(x, 0, topToBottom, characters).search()
     }
 
     // diag down right
     // left side
     for (y in 0..height - 1) {
-        vectors.add(Vector(0, y, diagDownRight, characters))
+        diagDownRightCount += Vector(0, y, diagDownRight, characters).search()
     }
     // top (minus left corner)
     for (x in 1..width - 1) {
-        vectors.add(Vector(x, 0, diagDownRight, characters))
+        diagDownRightCount += Vector(x, 0, diagDownRight, characters).search()
     }
 
     // diag down left
     // right side
     for (y in 0..height - 1) {
-        vectors.add(Vector(width - 1, y, diagDownLeft, characters))
+        diagDownLeftCount += Vector(width - 1, y, diagDownLeft, characters).search()
     }
     // top (minus right corner)
     for (x in 0..width - 2) {
-        vectors.add(Vector(x, 0, diagDownLeft, characters))
+        diagDownLeftCount += Vector(x, 0, diagDownLeft, characters).search()
     }
 
-    val result = vectors
-        .map { it.asString() }
-        .sumOf { search(it) }
+    println("leftToRightCount = ${leftToRightCount}")
+    println("topToBottomCount = ${topToBottomCount}")
+    println("diagDownRightCount = ${diagDownRightCount}")
+    println("diagDownLeftCount = ${diagDownLeftCount}")
+
+    val result = leftToRightCount + topToBottomCount + diagDownRightCount + diagDownLeftCount
 
     println(result)
 }
@@ -72,6 +78,10 @@ class Vector(
     val delta: Pair<Int, Int>,
     val characters: List<List<Char>>
 ) {
+    fun search(): Int {
+        return search(asString())
+    }
+
     fun asString(): String {
         var s = ""
 
