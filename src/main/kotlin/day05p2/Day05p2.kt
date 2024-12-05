@@ -10,16 +10,10 @@ fun main() {
 fun process(name: String) {
     readInput(name)
 
-    var result = 0
-
-    for (sequence in sequences) {
-        if (!check(sequence)) {
-            val ordered = sequence.sortedWith(comparator)
-            result += ordered[ordered.size / 2]
-        }
-    }
-
-    println(result)
+    println(sequences
+        .filter { !check(it) }
+        .map { it.sortedWith(comparator) }
+        .sumOf { it[it.size / 2] })
 }
 
 fun check(sequence: List<Int>): Boolean {
@@ -47,12 +41,10 @@ val lessThanRules = HashMultimap.create<Int, Int>()
 val sequences = ArrayList<List<Int>>()
 
 val comparator = Comparator<Int> { a, b ->
-    val lessThanA = lessThanRules[a] ?: emptySet()
-    if (lessThanA.contains(b)) {
+    if ((lessThanRules[a] ?: emptySet()).contains(b)) {
         -1
     } else {
-        val lessThanB = lessThanRules[b] ?: emptySet()
-        if (lessThanB.contains(a)) {
+        if ((lessThanRules[b] ?: emptySet()).contains(a)) {
             1
         } else {
             0
