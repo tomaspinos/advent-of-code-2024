@@ -11,11 +11,11 @@ fun process(name: String) {
     readInput(name)
 
     println(sequences
-        .filter { check(it) }
+        .filter { isSorted(it) }
         .sumOf { it[it.size / 2] })
 }
 
-fun check(sequence: List<Int>): Boolean {
+fun isSorted(sequence: List<Int>): Boolean {
     return sequence == sequence.sortedWith(comparator)
 }
 

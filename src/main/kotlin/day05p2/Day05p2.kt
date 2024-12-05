@@ -11,13 +11,14 @@ fun process(name: String) {
     readInput(name)
 
     println(sequences
-        .filter { !check(it) }
-        .map { it.sortedWith(comparator) }
+        .map { sortIfNotSorted(it) }
+        .filter { it.isNotEmpty() }
         .sumOf { it[it.size / 2] })
 }
 
-fun check(sequence: List<Int>): Boolean {
-    return sequence == sequence.sortedWith(comparator)
+fun sortIfNotSorted(sequence: List<Int>): List<Int> {
+    val sorted = sequence.sortedWith(comparator)
+    return if (sequence == sorted) emptyList() else sorted
 }
 
 fun readInput(name: String) {
