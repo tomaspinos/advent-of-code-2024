@@ -1,6 +1,6 @@
 package day04p2
 
-import java.io.File
+import resourceFile
 
 fun main() {
     searchFile("/day04.txt")
@@ -8,13 +8,7 @@ fun main() {
 
 fun searchFile(name: String) {
     val paper = ArrayList<String>()
-    File(object {}.javaClass.getResource(name).toURI()).forEachLine { s ->
-        var ss = ""
-        for (ch in s.toCharArray()) {
-            ss += if (ch != 'M' && ch != 'A' && ch != 'S') ' ' else ch
-        }
-        paper.add(ss)
-    }
+    resourceFile(name).forEachLine { paper.add(it) }
 
     val patterns = listOf(
         listOf(

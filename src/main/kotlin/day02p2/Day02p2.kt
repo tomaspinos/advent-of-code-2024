@@ -2,12 +2,12 @@ package day02p2
 
 import day02.isAsc
 import day02.isDesc
-import java.io.File
+import resourceFile
 import kotlin.math.abs
 
 fun main() {
     val reports = ArrayList<List<Int>>()
-    File(object {}.javaClass.getResource("/day02.txt").toURI()).forEachLine {
+    resourceFile("/day02.txt").forEachLine {
         reports.add(it.split(" ").map { it.toInt() })
     }
     val countOfSafeReports = reports.count {

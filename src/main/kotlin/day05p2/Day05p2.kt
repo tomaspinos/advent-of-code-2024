@@ -1,7 +1,7 @@
 package day05p2
 
 import com.google.common.collect.HashMultimap
-import java.io.File
+import resourceFile
 
 fun main() {
     process("/day05.txt")
@@ -23,7 +23,7 @@ fun sortIfNotSorted(sequence: List<Int>): List<Int> {
 
 fun readInput(name: String) {
     var readingRules = true
-    File(object {}.javaClass.getResource(name).toURI()).forEachLine {
+    resourceFile(name).forEachLine {
         if (it.isBlank()) {
             readingRules = false
         } else {
@@ -48,6 +48,7 @@ val comparator = Comparator<Int> { a, b ->
         if ((lessThanRules[b] ?: emptySet()).contains(a)) {
             1
         } else {
+            println("${a} == ${b}")
             0
         }
     }

@@ -1,9 +1,9 @@
 package day03p2
 
-import java.io.File
+import resourceFile
 
 fun main() {
-    var program = File(object {}.javaClass.getResource("/day03.txt").toURI())
+    var program = resourceFile("/day03.txt")
         .readLines()
         .joinToString()
     println(evaluateLine(program))

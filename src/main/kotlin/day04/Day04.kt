@@ -1,6 +1,6 @@
 package day04
 
-import java.io.File
+import resourceFile
 
 fun main() {
     searchFile("/day04.txt")
@@ -8,7 +8,7 @@ fun main() {
 
 fun searchFile(name: String) {
     val characters = ArrayList<List<Char>>()
-    File(object {}.javaClass.getResource(name).toURI()).forEachLine {
+    resourceFile(name).forEachLine {
         characters.add(it.toCharArray().asList())
     }
 

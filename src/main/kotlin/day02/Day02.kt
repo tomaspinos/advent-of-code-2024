@@ -1,11 +1,11 @@
 package day02
 
-import java.io.File
+import resourceFile
 import kotlin.math.abs
 
 fun main() {
     val reports = ArrayList<List<Int>>()
-    File(object {}.javaClass.getResource("/day02.txt").toURI()).forEachLine {
+    resourceFile("/day02.txt").forEachLine {
         val levels = it.split(" ").map { it.toInt() }
         reports.add(levels)
     }
