@@ -3,7 +3,11 @@ package day06p2
 import resourceFile
 
 fun main() {
+    val startTimeMillis = System.currentTimeMillis()
+
     process("/day06.txt")
+
+    println("${(System.currentTimeMillis() - startTimeMillis).toDouble() / 1000} s")
 }
 
 var width: Int = 0
