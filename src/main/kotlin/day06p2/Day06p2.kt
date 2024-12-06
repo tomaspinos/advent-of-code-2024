@@ -18,15 +18,16 @@ fun process(name: String) {
 
     for (x in 0..<width) {
         for (y in 0..<height) {
-            if (initialObstacles.contains(XY(x, y))) continue
-
             val extraObstacle = XY(x, y)
+
+            if (initialObstacles.contains(extraObstacle) || initialPosition.xy == extraObstacle) continue
+
             var currentPosition = initialPosition
             val visitedPositions = HashSet<DirectedPosition>()
             visitedPositions.add(currentPosition)
 
             while (true) {
-                val nextPosition = nextPosition(currentPosition, initialObstacles, extraObstacle)
+                val nextPosition = nextPosition(currentPosition, extraObstacle)
 
                 if (hasLeftArea(nextPosition)) {
                     break
@@ -48,10 +49,10 @@ fun hasLeftArea(position: DirectedPosition): Boolean {
     return with(position.xy) { x <= 0 || x >= width - 1 || y <= 0 || y >= height - 1 }
 }
 
-fun nextPosition(currentPosition: DirectedPosition, obstacles: Set<XY>, extraObstacle: XY): DirectedPosition {
+fun nextPosition(currentPosition: DirectedPosition, extraObstacle: XY): DirectedPosition {
     val nextXY = currentPosition.xy.step(currentPosition.direction)
 
-    return if (extraObstacle == nextXY || obstacles.contains(nextXY)) {
+    return if (extraObstacle == nextXY || initialObstacles.contains(nextXY)) {
         DirectedPosition(currentPosition.xy, currentPosition.direction.turn())
     } else {
         DirectedPosition(nextXY, currentPosition.direction)
