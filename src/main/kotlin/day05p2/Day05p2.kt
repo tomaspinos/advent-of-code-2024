@@ -1,7 +1,7 @@
 package day05p2
 
 import com.google.common.collect.HashMultimap
-import resourceFile
+import common.resourceFile
 
 fun main() {
     process("/day05.txt")

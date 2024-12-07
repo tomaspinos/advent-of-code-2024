@@ -1,6 +1,6 @@
 package day06
 
-import resourceFile
+import common.resourceFile
 
 fun main() {
     process("/day06.txt")

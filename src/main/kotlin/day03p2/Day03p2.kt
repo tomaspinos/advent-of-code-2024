@@ -1,6 +1,6 @@
 package day03p2
 
-import resourceFile
+import common.resourceFile
 
 fun main() {
     var program = resourceFile("/day03.txt")

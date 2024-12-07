@@ -1,6 +1,6 @@
 package day02
 
-import resourceFile
+import common.resourceFile
 import kotlin.math.abs
 
 fun main() {

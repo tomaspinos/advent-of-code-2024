@@ -2,7 +2,7 @@ package day02p2
 
 import day02.isAsc
 import day02.isDesc
-import resourceFile
+import common.resourceFile
 import kotlin.math.abs
 
 fun main() {

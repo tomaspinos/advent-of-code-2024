@@ -1,6 +1,6 @@
 package day04
 
-import resourceFile
+import common.resourceFile
 
 fun main() {
     searchFile("/day04.txt")

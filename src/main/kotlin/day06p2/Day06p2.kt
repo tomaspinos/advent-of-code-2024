@@ -1,6 +1,6 @@
 package day06p2
 
-import resourceFile
+import common.resourceFile
 
 fun main() {
     val startTimeMillis = System.currentTimeMillis()

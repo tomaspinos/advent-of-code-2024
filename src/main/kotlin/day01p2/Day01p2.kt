@@ -1,6 +1,6 @@
 package day01p2
 
-import resourceFile
+import common.resourceFile
 
 fun main() {
     val left = ArrayList<Int>()

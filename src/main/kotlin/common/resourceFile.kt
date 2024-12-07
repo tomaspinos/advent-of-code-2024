@@ -1,3 +1,5 @@
+package common
+
 import java.io.File
 
 fun resourceFile(name: String): File {
