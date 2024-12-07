@@ -1,6 +1,7 @@
 package day07
 
 import common.resourceFile
+import day07.Operator.*
 
 fun main() {
     val input = readInput("/day07.txt")
@@ -16,34 +17,26 @@ fun readInput(name: String): List<Pair<Long, List<Long>>> =
         }
 
 fun part1(input: List<Pair<Long, List<Long>>>): Long =
-    input.sumOf { (expectedResult, numbers) ->
-        calc(expectedResult, numbers, listOf(Operator.PLUS, Operator.MULTIPLY))
-    }
+    input.sumOf { (expectedResult, numbers) -> calc(expectedResult, numbers, PLUS, MULTIPLY) }
 
 fun part2(input: List<Pair<Long, List<Long>>>) =
-    input.sumOf { (expectedResult, numbers) ->
-        calc(
-            expectedResult,
-            numbers,
-            listOf(Operator.PLUS, Operator.MULTIPLY, Operator.CONCAT)
-        )
-    }
+    input.sumOf { (expectedResult, numbers) -> calc(expectedResult, numbers, PLUS, MULTIPLY, CONCAT) }
 
-fun calc(expectedResult: Long, numbers: List<Long>, operators: List<Operator>): Long =
-    calc(expectedResult, numbers[0], 1, operators, numbers)
+fun calc(expectedResult: Long, numbers: List<Long>, vararg operators: Operator): Long =
+    calcR(expectedResult, numbers[0], 1, numbers, *operators)
 
-fun calc(
+fun calcR(
     expectedResult: Long,
     intermediateResult: Long,
     index: Int,
-    operators: List<Operator>,
-    numbers: List<Long>
+    numbers: List<Long>,
+    vararg operators: Operator
 ): Long {
     if (intermediateResult > expectedResult) return 0
     return if (index < numbers.size) {
         for (operator in operators) {
             val inc = operator.calc(intermediateResult, numbers[index])
-            val possiblyResult = calc(expectedResult, inc, index + 1, operators, numbers)
+            val possiblyResult = calcR(expectedResult, inc, index + 1, numbers, *operators)
             if (possiblyResult > 0) return possiblyResult
         }
         return 0
