@@ -4,39 +4,33 @@ import common.resourceFile
 
 fun main() {
     val input = readInput("/day07.txt")
-    part1(input)
-    part2(input)
+    println(part1(input))
+    println(part2(input))
 }
 
-fun readInput(name: String): List<Pair<Long, List<Long>>> {
-    return resourceFile(name).readLines()
+fun readInput(name: String): List<Pair<Long, List<Long>>> =
+    resourceFile(name).readLines()
         .map {
             val (expectedResultStr, numbersStr) = it.split(": ")
-            Pair(expectedResultStr.toLong(), numbersStr.split(" ").map(String::toLong).toList())
+            Pair(expectedResultStr.toLong(), numbersStr.split(" ").map(String::toLong))
         }
-}
 
-fun part1(input: List<Pair<Long, List<Long>>>) {
-    val sum = input.sumOf { (expectedResult, numbers) ->
+fun part1(input: List<Pair<Long, List<Long>>>): Long =
+    input.sumOf { (expectedResult, numbers) ->
         calc(expectedResult, numbers, listOf(Operator.PLUS, Operator.MULTIPLY))
     }
-    println(sum)
-}
 
-fun part2(input: List<Pair<Long, List<Long>>>) {
-    val sum = input.sumOf { (expectedResult, numbers) ->
+fun part2(input: List<Pair<Long, List<Long>>>) =
+    input.sumOf { (expectedResult, numbers) ->
         calc(
             expectedResult,
             numbers,
             listOf(Operator.PLUS, Operator.MULTIPLY, Operator.CONCAT)
         )
     }
-    println(sum)
-}
 
-fun calc(expectedResult: Long, numbers: List<Long>, operators: List<Operator>): Long {
-    return calc(expectedResult, numbers[0], 1, operators, numbers)
-}
+fun calc(expectedResult: Long, numbers: List<Long>, operators: List<Operator>): Long =
+    calc(expectedResult, numbers[0], 1, operators, numbers)
 
 fun calc(
     expectedResult: Long,
