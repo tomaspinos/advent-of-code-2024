@@ -66,22 +66,21 @@ class City(val width: Int, val height: Int) {
      */
     fun computeAntinodes() {
         for (i in antennas.indices) {
-            for (j in antennas.indices) {
-                if (i == j) continue
+            for (j in i + 1..<antennas.size) {
                 val a1 = antennas[i]
                 val a2 = antennas[j]
                 if (a1.frequency != a2.frequency) continue
-                val (an1, an2) = computeAntinodesXY(a1.xy, a2.xy)
-                tryAddingAntinode(an1)
-                tryAddingAntinode(an2)
+                tryAddingAntinode(*computeAntinodesXY(a1.xy, a2.xy).toTypedArray())
             }
         }
     }
 
-    fun tryAddingAntinode(xy: XY) {
-        if (xy.y in plan.indices && xy.x in plan[0].indices) {
-            antinodes.add(xy)
-            plan[xy.y][xy.x] = true
+    fun tryAddingAntinode(vararg xys: XY) {
+        for (xy in xys) {
+            if (xy.y in plan.indices && xy.x in plan[0].indices) {
+                antinodes.add(xy)
+                plan[xy.y][xy.x] = true
+            }
         }
     }
 
@@ -108,9 +107,9 @@ class City(val width: Int, val height: Int) {
     }
 
     companion object {
-        fun computeAntinodesXY(a1: XY, a2: XY): Pair<XY, XY> {
+        fun computeAntinodesXY(a1: XY, a2: XY): List<XY> {
             val dif = a2.minus(a1)
-            return Pair(a1.minus(dif), a2.plus(dif))
+            return listOf(a1.minus(dif), a2.plus(dif))
         }
     }
 }

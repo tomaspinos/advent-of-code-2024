@@ -15,16 +15,18 @@ fun process(name: String) {
 
 fun readInput(name: String): City {
     val lines = resourceFile(name).readLines()
-    val city = City(lines[0].length, lines.size)
+    val width = lines[0].length
+    val height = lines.size
+    val antennas = mutableListOf<Antenna>()
     for (y in lines.indices) {
         for (x in lines[y].indices) {
             val ch = lines[y][x]
             if (ch != '.') {
-                city.add(Antenna(XY(x, y), ch))
+                antennas.add(Antenna(XY(x, y), ch))
             }
         }
     }
-    return city
+    return City(width, height, antennas)
 }
 
 data class XY(val x: Int, val y: Int) {
@@ -34,26 +36,17 @@ data class XY(val x: Int, val y: Int) {
 
 data class Antenna(val xy: XY, val frequency: Char)
 
-class City(val width: Int, val height: Int) {
-    val plan: Array<Array<Boolean>> = Array(height) { Array(width) { false } }
-    val antennas = mutableListOf<Antenna>()
+class City(val width: Int, val height: Int, val antennas: List<Antenna>) {
     val antinodes = mutableSetOf<XY>()
-
-    fun add(antenna: Antenna) {
-        antennas.add(antenna)
-        plan[antenna.xy.y][antenna.xy.x] = true
-    }
 
     fun computeAntinodes() {
         for (i in antennas.indices) {
-            for (j in antennas.indices) {
-                if (i == j) continue
+            for (j in i + 1..<antennas.size) {
                 val a1 = antennas[i]
                 val a2 = antennas[j]
                 if (a1.frequency != a2.frequency) continue
                 for (antinode in computeAntinodesXY(a1.xy, a2.xy)) {
                     antinodes.add(antinode)
-                    plan[antinode.y][antinode.x] = true
                 }
             }
         }
@@ -84,12 +77,12 @@ class City(val width: Int, val height: Int) {
     fun computeAntinodesXY(a1: XY, a2: XY): List<XY> {
         val result = mutableListOf<XY>()
         val dif = a2.minus(a1)
-        var a1m = a1.minus(dif)
+        var a1m = a1
         while (isValidXY(a1m)) {
             result.add(a1m)
             a1m = a1m.minus(dif)
         }
-        var a1p = a1.plus(dif)
+        var a1p = a1
         while (isValidXY(a1p)) {
             result.add(a1p)
             a1p = a1p.plus(dif)
@@ -97,21 +90,15 @@ class City(val width: Int, val height: Int) {
         return result
     }
 
-    fun isValidXY(xy: XY): Boolean = xy.y in plan.indices && xy.x in plan[0].indices
+    fun isValidXY(xy: XY): Boolean = xy.x in 0..<width && xy.y in 0..<height
 
     fun print() {
-        for (y in plan.indices) {
-            for (x in plan[y].indices) {
-                if (plan[y][x]) {
-                    val maybeAntenna = antennas.find { it.xy == XY(x, y) }
-                    if (maybeAntenna != null) {
-                        print(maybeAntenna.frequency)
-                    } else {
-                        print('#')
-                    }
-                } else {
-                    print('.')
-                }
+        for (y in 0..<height) {
+            for (x in 0..<width) {
+                val maybeAntenna = antennas.find { it.xy == XY(x, y) }
+                if (maybeAntenna != null) print(maybeAntenna.frequency)
+                else if (antinodes.contains(XY(x, y))) print('#')
+                else print('.')
             }
             println()
         }
