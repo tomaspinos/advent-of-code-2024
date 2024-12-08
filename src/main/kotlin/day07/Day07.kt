@@ -27,21 +27,21 @@ fun calc(expectedResult: Long, numbers: List<Long>, vararg operators: Operator):
 
 fun calcR(
     expectedResult: Long,
-    intermediateResult: Long,
+    partialResult: Long,
     index: Int,
     numbers: List<Long>,
     vararg operators: Operator
 ): Long {
-    if (intermediateResult > expectedResult) return 0
+    if (partialResult > expectedResult) return 0
     return if (index < numbers.size) {
         for (operator in operators) {
-            val inc = operator.calc(intermediateResult, numbers[index])
-            val possiblyResult = calcR(expectedResult, inc, index + 1, numbers, *operators)
+            val nextPartialResult = operator.calc(partialResult, numbers[index])
+            val possiblyResult = calcR(expectedResult, nextPartialResult, index + 1, numbers, *operators)
             if (possiblyResult > 0) return possiblyResult
         }
         return 0
     } else {
-        if (expectedResult == intermediateResult) expectedResult else 0
+        if (expectedResult == partialResult) expectedResult else 0
     }
 }
 
