@@ -45,27 +45,25 @@ class Plan(private val width: Int, private val height: Int, private val fields: 
 
     fun ratings() = trailheads.sumOf { dfs(it) { _: XY, _: Search -> true } }
 
-    fun scores() = trailheads.sumOf { dfs(it) { position, search -> !search.reachedBefore(position) } }
+    fun scores() = trailheads.sumOf { dfs(it) { pos, search -> !search.reachedBefore(pos) } }
 
-    private fun dfs(trailhead: XY, nineCondition: (XY, Search) -> Boolean): Int {
+    private fun dfs(trailhead: XY, if9Good: (XY, Search) -> Boolean): Int {
         val search = Search()
-        dfs(trailhead, listOf(trailhead), search, nineCondition)
-        return search.countNines()
+        dfs(trailhead, listOf(trailhead), search, if9Good)
+        return search.count9s()
     }
 
-    private fun dfs(
-        position: XY, path: List<XY>, search: Search, nineCondition: (XY, Search) -> Boolean
-    ) {
-        val height = fields[position.y][position.x]
+    private fun dfs(pos: XY, path: List<XY>, search: Search, if9Good: (XY, Search) -> Boolean) {
+        val height = fields[pos.y][pos.x]
         for (direction in directions) {
-            val nextPosition = position + direction
-            if (isValid(nextPosition) && !path.contains(nextPosition)) {
-                val nextHeight = fields[nextPosition.y][nextPosition.x]
+            val nextPos = pos + direction
+            if (isValid(nextPos) && !path.contains(nextPos)) {
+                val nextHeight = fields[nextPos.y][nextPos.x]
                 if (nextHeight == height + 1) {
                     if (nextHeight == 9) {
-                        if (nineCondition(nextPosition, search)) search.reach(nextPosition)
+                        if (if9Good(nextPos, search)) search.reach(nextPos)
                     } else {
-                        dfs(nextPosition, path + nextPosition, search, nineCondition)
+                        dfs(nextPos, path + nextPos, search, if9Good)
                     }
                 }
             }
@@ -76,10 +74,10 @@ class Plan(private val width: Int, private val height: Int, private val fields: 
 }
 
 class Search {
-    private val reachedNines: MutableList<XY> = mutableListOf()
-    fun reachedBefore(xy: XY): Boolean = reachedNines.contains(xy)
-    fun reach(xy: XY) = reachedNines.add(xy)
-    fun countNines(): Int = reachedNines.size
+    private val reached9s: MutableList<XY> = mutableListOf()
+    fun reachedBefore(xy: XY): Boolean = reached9s.contains(xy)
+    fun reach(xy: XY) = reached9s.add(xy)
+    fun count9s(): Int = reached9s.size
 }
 
 data class XY(val x: Int, val y: Int) {
