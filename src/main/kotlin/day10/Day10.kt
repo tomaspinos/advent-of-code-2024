@@ -8,42 +8,8 @@ fun main() {
 
 fun process(name: String) {
     val plan = readInput(name)
-
-    val score = plan.trailheads
-        .sumOf { dfs(it, plan) { position, search -> !search.reachedBefore(position) } }
-    println(score)
-
-    val rating = plan.trailheads
-        .sumOf { dfs(it, plan) { _, _ -> true } }
-    println(rating)
-}
-
-fun dfs(trailhead: XY, plan: Plan, nineCondition: (XY, Search) -> Boolean): Int {
-    val search = Search()
-    dfs(trailhead, listOf(trailhead), plan, search, nineCondition)
-    return search.countNines()
-}
-
-fun dfs(
-    position: XY, path: List<XY>, plan: Plan, search: Search, nineCondition: (XY, Search) -> Boolean
-) {
-    val height = plan.fields[position.y][position.x]
-    for (direction in plan.directions) {
-        val nextPosition = position + direction
-        if (plan.isValid(nextPosition) && !path.contains(nextPosition)) {
-            val nextHeight = plan.fields[nextPosition.y][nextPosition.x]
-            if (nextHeight == height + 1) {
-                if (nextHeight == 9) {
-                    if (nineCondition(nextPosition, search)) search.reach(nextPosition)
-                } else {
-                    val nextPath = mutableListOf<XY>()
-                    nextPath.addAll(path)
-                    nextPath.add(nextPosition)
-                    dfs(nextPosition, nextPath, plan, search, nineCondition)
-                }
-            }
-        }
-    }
+    println(plan.scores())
+    println(plan.ratings())
 }
 
 fun readInput(name: String): Plan {
@@ -59,14 +25,14 @@ fun readInput(name: String): Plan {
     return Plan(width, height, fields)
 }
 
-class Plan(val width: Int, val height: Int, val fields: Array<IntArray>) {
-    val directions: Array<XY> = arrayOf(
+class Plan(private val width: Int, private val height: Int, private val fields: Array<IntArray>) {
+    private val directions: Array<XY> = arrayOf(
         /* left  */ XY(-1, 0),
         /* up    */ XY(0, -1),
         /* right */ XY(1, 0),
         /* down  */ XY(0, 1)
     )
-    val trailheads: List<XY>
+    private val trailheads: List<XY>
 
     init {
         trailheads = mutableListOf()
@@ -77,7 +43,36 @@ class Plan(val width: Int, val height: Int, val fields: Array<IntArray>) {
         }
     }
 
-    fun isValid(xy: XY): Boolean = xy.y in 0..<height && xy.x in 0..<width
+    fun ratings() = trailheads.sumOf { dfs(it) { _: XY, _: Search -> true } }
+
+    fun scores() = trailheads.sumOf { dfs(it) { position, search -> !search.reachedBefore(position) } }
+
+    private fun dfs(trailhead: XY, nineCondition: (XY, Search) -> Boolean): Int {
+        val search = Search()
+        dfs(trailhead, listOf(trailhead), search, nineCondition)
+        return search.countNines()
+    }
+
+    private fun dfs(
+        position: XY, path: List<XY>, search: Search, nineCondition: (XY, Search) -> Boolean
+    ) {
+        val height = fields[position.y][position.x]
+        for (direction in directions) {
+            val nextPosition = position + direction
+            if (isValid(nextPosition) && !path.contains(nextPosition)) {
+                val nextHeight = fields[nextPosition.y][nextPosition.x]
+                if (nextHeight == height + 1) {
+                    if (nextHeight == 9) {
+                        if (nineCondition(nextPosition, search)) search.reach(nextPosition)
+                    } else {
+                        dfs(nextPosition, path + nextPosition, search, nineCondition)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun isValid(xy: XY): Boolean = xy.y in 0..<height && xy.x in 0..<width
 }
 
 class Search {
