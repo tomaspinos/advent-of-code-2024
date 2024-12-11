@@ -14,24 +14,24 @@ fun process(name: String, iterations: Int) {
     println(stones.values.sum())
 }
 
-fun blink(map: Map<Long, Long>): Map<Long, Long> {
-    val newMap = mutableMapOf<Long, Long>()
-    for ((uniqueStoneNumber, count) in map.entries) {
-        if (uniqueStoneNumber == 0L) {
-            newMap[1L] = (newMap[1L] ?: 0) + count
+fun blink(stones: Map<Long, Long>): Map<Long, Long> {
+    val newStones = mutableMapOf<Long, Long>()
+    for ((stone, count) in stones.entries) {
+        if (stone == 0L) {
+            newStones[1L] = (newStones[1L] ?: 0) + count
         } else {
-            val string = uniqueStoneNumber.toString()
+            val string = stone.toString()
             if (string.length % 2 == 0) {
                 val s1L = string.substring(0, string.length / 2).toLong()
                 val s2L = string.substring(string.length / 2).toLong()
-                newMap[s1L] = (newMap[s1L] ?: 0) + count
-                newMap[s2L] = (newMap[s2L] ?: 0) + count
+                newStones[s1L] = (newStones[s1L] ?: 0) + count
+                newStones[s2L] = (newStones[s2L] ?: 0) + count
             } else {
-                newMap[uniqueStoneNumber * 2024] = (newMap[uniqueStoneNumber * 2024] ?: 0) + count
+                newStones[stone * 2024] = (newStones[stone * 2024] ?: 0) + count
             }
         }
     }
-    return newMap
+    return newStones
 }
 
 fun readInput(name: String): Map<Long, Long> {
