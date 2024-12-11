@@ -17,9 +17,7 @@ fun process(name: String, iterations: Int) {
 fun blink(map: Map<Long, Long>): Map<Long, Long> {
     val newMap = mutableMapOf<Long, Long>()
     for (entry in map.entries) {
-        val uniqueStoneNumber = entry.key
-        val count = entry.value
-
+        val (uniqueStoneNumber, count) = entry
         if (uniqueStoneNumber == 0L) {
             newMap[1L] = (newMap[1L] ?: 0) + count
         } else {
