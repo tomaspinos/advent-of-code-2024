@@ -25,10 +25,10 @@ fun blink(map: Map<Long, Long>): Map<Long, Long> {
         } else {
             val string = uniqueStoneNumber.toString()
             if (string.length % 2 == 0) {
-                val s1 = string.substring(0, string.length / 2)
-                val s2 = string.substring(string.length / 2)
-                newMap[s1.toLong()] = (newMap[s1.toLong()] ?: 0) + count
-                newMap[s2.toLong()] = (newMap[s2.toLong()] ?: 0) + count
+                val s1L = string.substring(0, string.length / 2).toLong()
+                val s2L = string.substring(string.length / 2).toLong()
+                newMap[s1L] = (newMap[s1L] ?: 0) + count
+                newMap[s2L] = (newMap[s2L] ?: 0) + count
             } else {
                 newMap[uniqueStoneNumber * 2024] = (newMap[uniqueStoneNumber * 2024] ?: 0) + count
             }
