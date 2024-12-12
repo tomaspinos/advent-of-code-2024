@@ -38,13 +38,7 @@ fun process(name: String) {
         regions.sumOf { it.plants.size * it.plants.sumOf { plant -> 4 - plant.neighborCount } }
     println(price1)
 
-    var price2 = 0
-    for (region in regions) {
-        val sideCount = countSides(region)
-        val price = region.plants.size * sideCount
-        println("Region ${region.plantCh}: ${region.plants.size} * ${sideCount} = ${price}")
-        price2 += price
-    }
+    val price2 = regions.sumOf { it.plants.size * countSides(it) }
     println(price2)
 }
 
