@@ -34,8 +34,18 @@ fun process(name: String) {
         }
     }
 
-    val price = regions.sumOf { it.plants.size * it.plants.sumOf { plant -> 4 - plant.neighborCount } }
-    println(price)
+    val price1 =
+        regions.sumOf { it.plants.size * it.plants.sumOf { plant -> 4 - plant.neighborCount } }
+    println(price1)
+
+    var price2 = 0
+    for (region in regions) {
+        val sideCount = countSides(region)
+        val price = region.plants.size * sideCount
+        println("Region ${region.plantCh}: ${region.plants.size} * ${sideCount} = ${price}")
+        price2 += price
+    }
+    println(price2)
 }
 
 fun explore(xy: XY, region: Region, visited: MutableSet<XY>) {
@@ -51,6 +61,55 @@ fun explore(xy: XY, region: Region, visited: MutableSet<XY>) {
             explore(samePlantNeighborXY, region, visited)
         }
     }
+}
+
+fun countSides(region: Region): Int {
+    val regionXys = region.plants.map { it.xy }.toSet()
+    val borderXys = region.plants
+        .filter { it.neighborCount < 4 }
+        .map { it.xy }
+
+    var sideCount = 0
+
+    borderXys.groupBy { it.y }.values.forEach { row ->
+        val rowSortedByX = row.sortedBy { it.x }
+
+        val withNoNeighborUp = rowSortedByX.filter { xy -> !regionXys.contains(xy.up()) }
+        sideCount += countRowSections(withNoNeighborUp)
+
+        val withNoNeighborDown = rowSortedByX.filter { xy -> !regionXys.contains(xy.down()) }
+        sideCount += countRowSections(withNoNeighborDown)
+    }
+
+    borderXys.groupBy { it.x }.values.forEach { column ->
+        val columnSortedByY = column.sortedBy { it.y }
+
+        val withNoNeighborLeft = columnSortedByY.filter { xy -> !regionXys.contains(xy.left()) }
+        sideCount += countColumnSections(withNoNeighborLeft)
+
+        val withNoNeighborRight = columnSortedByY.filter { xy -> !regionXys.contains(xy.right()) }
+        sideCount += countColumnSections(withNoNeighborRight)
+    }
+
+    return sideCount
+}
+
+fun countRowSections(xys: List<XY>): Int {
+    if (xys.isEmpty()) return 0
+    var count = 1
+    for (i in 1..<xys.size) {
+        if (xys[i].x != xys[i - 1].x + 1) count++
+    }
+    return count
+}
+
+fun countColumnSections(xys: List<XY>): Int {
+    if (xys.isEmpty()) return 0
+    var count = 1
+    for (i in 1..<xys.size) {
+        if (xys[i].y != xys[i - 1].y + 1) count++
+    }
+    return count
 }
 
 fun readInput(name: String) {
@@ -69,6 +128,10 @@ fun isValid(xy: XY): Boolean = xy.y in garden.indices && xy.x in garden[0].indic
 
 data class XY(val x: Int, val y: Int) {
     operator fun plus(other: XY) = XY(x + other.x, y + other.y)
+    fun up(): XY = XY(x, y - 1)
+    fun down(): XY = XY(x, y + 1)
+    fun left(): XY = XY(x - 1, y)
+    fun right(): XY = XY(x + 1, y)
 }
 
 data class Plant(val xy: XY, val neighborCount: Int)
