@@ -15,6 +15,8 @@ fun process(name: String) {
 fun solve(task: Task): Long {
     // ax*a + bx*b = px
     // ay*a + by*b = py
+    // a = (bx*py - by*px) / (ay*bx - ax*by)
+    // b = (px - ax*a) / bx
 
     val (ax, ay) = task.a
     val (bx, by) = task.b
