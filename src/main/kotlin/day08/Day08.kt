@@ -1,5 +1,6 @@
 package day08
 
+import common.XY
 import common.resourceFile
 
 fun main() {
@@ -25,11 +26,6 @@ fun readInput(name: String): City {
         }
     }
     return city
-}
-
-data class XY(val x: Int, val y: Int) {
-    fun plus(xy: XY): XY = XY(x + xy.x, y + xy.y)
-    fun minus(xy: XY): XY = XY(x - xy.x, y - xy.y)
 }
 
 data class Antenna(val xy: XY, val frequency: Char)
@@ -108,8 +104,8 @@ class City(val width: Int, val height: Int) {
 
     companion object {
         fun computeAntinodesXY(a1: XY, a2: XY): List<XY> {
-            val dif = a2.minus(a1)
-            return listOf(a1.minus(dif), a2.plus(dif))
+            val dif = a2 - a1
+            return listOf(a1 - dif, a2 + dif)
         }
     }
 }

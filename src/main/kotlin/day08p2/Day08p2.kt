@@ -1,5 +1,6 @@
 package day08p2
 
+import common.XY
 import common.resourceFile
 
 fun main() {
@@ -27,11 +28,6 @@ fun readInput(name: String): City {
         }
     }
     return City(width, height, antennas)
-}
-
-data class XY(val x: Int, val y: Int) {
-    fun plus(xy: XY): XY = XY(x + xy.x, y + xy.y)
-    fun minus(xy: XY): XY = XY(x - xy.x, y - xy.y)
 }
 
 data class Antenna(val xy: XY, val frequency: Char)
@@ -76,21 +72,19 @@ class City(val width: Int, val height: Int, val antennas: List<Antenna>) {
      */
     fun computeAntinodesXY(a1: XY, a2: XY): List<XY> {
         val result = mutableListOf<XY>()
-        val dif = a2.minus(a1)
+        val dif = a2 - a1
         var a1m = a1
-        while (isValidXY(a1m)) {
+        while (a1m.isValid(width, height)) {
             result.add(a1m)
-            a1m = a1m.minus(dif)
+            a1m -= dif
         }
         var a1p = a1
-        while (isValidXY(a1p)) {
+        while (a1p.isValid(width, height)) {
             result.add(a1p)
-            a1p = a1p.plus(dif)
+            a1p += dif
         }
         return result
     }
-
-    fun isValidXY(xy: XY): Boolean = xy.x in 0..<width && xy.y in 0..<height
 
     fun print() {
         for (y in 0..<height) {

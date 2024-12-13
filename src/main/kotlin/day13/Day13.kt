@@ -1,5 +1,6 @@
 package day13
 
+import common.XLY
 import common.resourceFile
 
 fun main() {
@@ -9,7 +10,7 @@ fun main() {
 fun process(name: String) {
     val tasks = readInput(name)
     println(tasks.sumOf { solve(it) })
-    println(tasks.sumOf { solve(Task(it.a, it.b, it.prize + XY(10000000000000, 10000000000000))) })
+    println(tasks.sumOf { solve(Task(it.a, it.b, it.prize + XLY(10000000000000, 10000000000000))) })
 }
 
 fun solve(task: Task): Long {
@@ -61,13 +62,9 @@ fun readInput(name: String): List<Task> {
     return tasks
 }
 
-fun readXY(s: String, regex: Regex): XY {
+fun readXY(s: String, regex: Regex): XLY {
     val groups = regex.find(s)!!.groups
-    return XY(groups[1]!!.value.toLong(), groups[2]!!.value.toLong())
+    return XLY(groups[1]!!.value.toLong(), groups[2]!!.value.toLong())
 }
 
-data class XY(val x: Long, val y: Long) {
-    operator fun plus(other: XY): XY = XY(x + other.x, y + other.y)
-}
-
-data class Task(val a: XY, val b: XY, val prize: XY)
+data class Task(val a: XLY, val b: XLY, val prize: XLY)

@@ -1,5 +1,7 @@
 package day10
 
+import common.XY
+import common.directions
 import common.resourceFile
 
 fun main() {
@@ -26,12 +28,6 @@ fun readInput(name: String): Plan {
 }
 
 class Plan(private val width: Int, private val height: Int, private val fields: Array<IntArray>) {
-    private val directions: Array<XY> = arrayOf(
-        /* left  */ XY(-1, 0),
-        /* up    */ XY(0, -1),
-        /* right */ XY(1, 0),
-        /* down  */ XY(0, 1)
-    )
     private val trailheads: List<XY>
 
     init {
@@ -57,7 +53,7 @@ class Plan(private val width: Int, private val height: Int, private val fields: 
         val height = fields[pos.y][pos.x]
         for (direction in directions) {
             val nextPos = pos + direction
-            if (isValid(nextPos) && !path.contains(nextPos)) {
+            if (nextPos.isValid(this.width, this.height) && !path.contains(nextPos)) {
                 val nextHeight = fields[nextPos.y][nextPos.x]
                 if (nextHeight == height + 1) {
                     if (nextHeight == 9) {
@@ -69,8 +65,6 @@ class Plan(private val width: Int, private val height: Int, private val fields: 
             }
         }
     }
-
-    private fun isValid(xy: XY): Boolean = xy.y in 0..<height && xy.x in 0..<width
 }
 
 class Search {
@@ -78,8 +72,4 @@ class Search {
     fun reachedBefore(xy: XY): Boolean = reached9s.contains(xy)
     fun reach(xy: XY) = reached9s.add(xy)
     fun count9s(): Int = reached9s.size
-}
-
-data class XY(val x: Int, val y: Int) {
-    operator fun plus(other: XY): XY = XY(x + other.x, y + other.y)
 }

@@ -1,5 +1,7 @@
 package day12
 
+import common.XY
+import common.directions
 import common.resourceFile
 
 fun main() {
@@ -9,13 +11,6 @@ fun main() {
 var garden: Array<Array<Char>> = Array(0) { Array(0) { ' ' } }
 var width = 0
 var height = 0
-
-val directions = arrayOf(
-   /* left  */ XY(-1, 0),
-   /* up    */ XY(0, -1),
-   /* right */ XY(1, 0),
-   /* down  */ XY(0, 1)
-)
 
 fun process(name: String) {
     readInput(name)
@@ -47,7 +42,7 @@ fun explore(xy: XY, region: Region, visited: MutableSet<XY>) {
     visited.add(xy)
     val samePlantNeighborXYs = directions
         .map { xy + it }
-        .filter { isValid(it) }
+        .filter { it.isValid(garden) }
         .filter { garden[it.y][it.x] == plantCh }
     region.plants.add(Plant(xy, samePlantNeighborXYs.size))
     for (samePlantNeighborXY in samePlantNeighborXYs) {
@@ -116,16 +111,6 @@ fun readInput(name: String) {
             garden[y][x] = lines[y][x]
         }
     }
-}
-
-fun isValid(xy: XY): Boolean = xy.y in garden.indices && xy.x in garden[0].indices
-
-data class XY(val x: Int, val y: Int) {
-    operator fun plus(other: XY) = XY(x + other.x, y + other.y)
-    fun up(): XY = XY(x, y - 1)
-    fun down(): XY = XY(x, y + 1)
-    fun left(): XY = XY(x - 1, y)
-    fun right(): XY = XY(x + 1, y)
 }
 
 data class Plant(val xy: XY, val neighborCount: Int)
