@@ -9,5 +9,5 @@ fun main() {
         println(robot)
     }
 
-    process("/day14sample1.txt", 11, 7, 100, null)
+    process("/day14sample1.txt", 11, 7, 100)
 }

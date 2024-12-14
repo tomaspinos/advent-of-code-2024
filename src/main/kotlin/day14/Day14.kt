@@ -6,11 +6,15 @@ import java.io.BufferedWriter
 import java.io.File
 
 fun main() {
-    process("/day14.txt", 101, 103, 100, null)
-    process("/day14.txt", 101, 103, 10000, File("tree.txt").bufferedWriter())
+    part1()
+    part2()
 }
 
-fun process(name: String, spaceWidth: Int, spaceHeight: Int, iterations: Int, writer: BufferedWriter?) {
+fun part1() = process("/day14.txt", 101, 103, 100)
+
+fun part2() = process("/day14.txt", 101, 103, 10000, File("tree.txt").bufferedWriter())
+
+fun process(name: String, spaceWidth: Int, spaceHeight: Int, iterations: Int, writer: BufferedWriter? = null) {
     var robots = readInput(name)
 
     if (writer != null) print(0, robots, spaceWidth, spaceHeight, writer)
