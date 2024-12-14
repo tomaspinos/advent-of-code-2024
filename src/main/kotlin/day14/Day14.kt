@@ -2,20 +2,32 @@ package day14
 
 import common.XY
 import common.resourceFile
+import java.io.BufferedWriter
+import java.io.File
 
 fun main() {
-    process("/day14.txt", 101, 103)
+    process("/day14.txt", 101, 103, 100, null)
+    process("/day14.txt", 101, 103, 10000, File("tree.txt").bufferedWriter())
 }
 
-fun process(name: String, spaceWidth: Int, spaceHeight: Int) {
+fun process(name: String, spaceWidth: Int, spaceHeight: Int, iterations: Int, writer: BufferedWriter?) {
     var robots = readInput(name)
 
-    for (i in 1..100) {
+    if (writer != null) {
+        writer.write("0\n")
+        print(robots, spaceWidth, spaceHeight, writer)
+    }
+
+    for (i in 1..iterations) {
         val newRobots = mutableListOf<Robot>()
         for (robot in robots) {
             newRobots.add(robot.move(spaceWidth, spaceHeight))
         }
         robots = newRobots
+        if (writer != null) {
+            writer.write("$i\n")
+            print(robots, spaceWidth, spaceHeight, writer)
+        }
     }
 
     val quadrants = robots.groupBy { it.quadrant(spaceWidth, spaceHeight) }.filterKeys { it != 0 }
@@ -25,6 +37,21 @@ fun process(name: String, spaceWidth: Int, spaceHeight: Int) {
     for (i in 1..<quadrantSizes.size) result *= quadrantSizes[i]
 
     println(result)
+}
+
+fun print(robots: List<Robot>, spaceWidth: Int, spaceHeight: Int, writer: BufferedWriter) {
+    val space = Array(spaceHeight) { Array(spaceWidth) { 0 } }
+    for (robot in robots) {
+        space[robot.xy.y][robot.xy.x]++
+    }
+    for (y in 0..<spaceHeight) {
+        var s = ""
+        for (x in 0..<spaceWidth) {
+            val count = space[y][x]
+            if (count > 0) s += count else s += '.'
+        }
+        writer.write("$s\n")
+    }
 }
 
 val REGEX = "p=(\\d+),(\\d+) v=(-*\\d+),(-*\\d+)".toRegex()
@@ -54,7 +81,7 @@ data class Robot(val xy: XY, val velocity: XY) {
         val middleWidth = spaceWidth / 2
         return if (xy.y < middleHeight) {
             if (xy.x < middleWidth) 1 else if (xy.x > middleWidth) 2 else 0
-        } else if (xy.y > middleHeight){
+        } else if (xy.y > middleHeight) {
             if (xy.x < middleWidth) 3 else if (xy.x > middleWidth) 4 else 0
         } else {
             0
