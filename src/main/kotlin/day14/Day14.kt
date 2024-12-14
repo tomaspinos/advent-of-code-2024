@@ -13,37 +13,26 @@ fun main() {
 fun process(name: String, spaceWidth: Int, spaceHeight: Int, iterations: Int, writer: BufferedWriter?) {
     var robots = readInput(name)
 
-    if (writer != null) {
-        writer.write("0\n")
-        print(robots, spaceWidth, spaceHeight, writer)
-    }
+    if (writer != null) print(0, robots, spaceWidth, spaceHeight, writer)
 
     for (i in 1..iterations) {
-        val newRobots = mutableListOf<Robot>()
-        for (robot in robots) {
-            newRobots.add(robot.move(spaceWidth, spaceHeight))
-        }
-        robots = newRobots
-        if (writer != null) {
-            writer.write("$i\n")
-            print(robots, spaceWidth, spaceHeight, writer)
-        }
+        robots = robots.map { it.move(spaceWidth, spaceHeight) }
+        if (writer != null) print(i, robots, spaceWidth, spaceHeight, writer)
     }
 
-    val quadrants = robots.groupBy { it.quadrant(spaceWidth, spaceHeight) }.filterKeys { it != 0 }
-    val quadrantSizes = quadrants.values.map { it.size }
-
-    var result = quadrantSizes[0]
-    for (i in 1..<quadrantSizes.size) result *= quadrantSizes[i]
+    val result = robots
+        .groupBy { it.quadrant(spaceWidth, spaceHeight) }
+        .filterKeys { it != 0 }
+        .values.map { it.size }
+        .reduce { acc, cur -> acc * cur }
 
     println(result)
 }
 
-fun print(robots: List<Robot>, spaceWidth: Int, spaceHeight: Int, writer: BufferedWriter) {
+fun print(iteration: Int, robots: List<Robot>, spaceWidth: Int, spaceHeight: Int, writer: BufferedWriter) {
+    writer.write("$iteration\n")
     val space = Array(spaceHeight) { Array(spaceWidth) { 0 } }
-    for (robot in robots) {
-        space[robot.xy.y][robot.xy.x]++
-    }
+    for (robot in robots) space[robot.xy.y][robot.xy.x]++
     for (y in 0..<spaceHeight) {
         var s = ""
         for (x in 0..<spaceWidth) {
@@ -60,11 +49,12 @@ fun readInput(name: String): List<Robot> {
     val robots = mutableListOf<Robot>()
     resourceFile(name).forEachLine {
         val groups = REGEX.find(it)!!.groups
-        val px = groups[1]!!.value.toInt()
-        val py = groups[2]!!.value.toInt()
-        val vx = groups[3]!!.value.toInt()
-        val vy = groups[4]!!.value.toInt()
-        robots.add(Robot(XY(px, py), XY(vx, vy)))
+        robots.add(
+            Robot(
+                XY(groups[1]!!.value.toInt(), groups[2]!!.value.toInt()),
+                XY(groups[3]!!.value.toInt(), groups[4]!!.value.toInt())
+            )
+        )
     }
     return robots
 }
@@ -79,12 +69,14 @@ data class Robot(val xy: XY, val velocity: XY) {
     fun quadrant(spaceWidth: Int, spaceHeight: Int): Int {
         val middleHeight = spaceHeight / 2
         val middleWidth = spaceWidth / 2
-        return if (xy.y < middleHeight) {
-            if (xy.x < middleWidth) 1 else if (xy.x > middleWidth) 2 else 0
-        } else if (xy.y > middleHeight) {
-            if (xy.x < middleWidth) 3 else if (xy.x > middleWidth) 4 else 0
-        } else {
-            0
+        return with(xy) {
+            if (y < middleHeight) {
+                if (x < middleWidth) 1 else if (x > middleWidth) 2 else 0
+            } else if (y > middleHeight) {
+                if (x < middleWidth) 3 else if (x > middleWidth) 4 else 0
+            } else {
+                0
+            }
         }
     }
 }
