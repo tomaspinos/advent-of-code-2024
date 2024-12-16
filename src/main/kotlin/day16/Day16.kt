@@ -15,12 +15,11 @@ fun part1(name: String) {
 
 fun part2(name: String) {
     val (pathsToEnd, _) = process(name)
-    val minCost = pathsToEnd.map { it.cost }.min()
-    val bestPaths = pathsToEnd.filter { it.cost == minCost }
-    val steps = bestPaths
-        .flatMap { path -> path.steps.map { step -> step.second } }
-        .toSet()
-    println(steps.size)
+    val minCost = pathsToEnd.minOfOrNull(Path::cost)
+    println(pathsToEnd
+        .filter { it.cost == minCost }
+        .flatMap(Path::xys)
+        .toSet().size)
 }
 
 fun process(name: String): Pair<List<Path>, Maze> {
@@ -81,21 +80,17 @@ fun readInput(name: String): Maze {
 
 fun print(paths: List<Path>, Os: Boolean, maze: Maze) {
     val canvas = Array(maze.height) { Array(maze.width) { '.' } }
-    for (y in maze.fields.indices) {
-        for (x in maze.fields[y].indices) {
+    for (y in maze.fields.indices)
+        for (x in maze.fields[y].indices)
             when (maze.fields[y][x]) {
                 Field.WALL -> canvas[y][x] = '#'
                 Field.FREE -> canvas[y][x] = '.'
                 Field.START -> canvas[y][x] = 'S'
                 Field.END -> canvas[y][x] = 'E'
             }
-        }
-    }
-    for (path in paths) {
-        for ((direction, xy) in path.steps) {
+    for (path in paths)
+        for ((direction, xy) in path.steps)
             canvas[xy.y][xy.x] = if (Os) 'O' else direction.ch
-        }
-    }
     canvas.forEach { println(it.joinToString("")) }
     println()
 }
@@ -138,6 +133,8 @@ data class Maze(
 
 data class Path(val steps: List<Pair<Direction, XY>>, val cost: Int) {
     fun lastXY(): XY = steps.last().second
+
+    fun xys(): List<XY> = steps.map(Pair<Direction, XY>::second)
 
     fun step(direction: Direction, xy: XY): Path {
         val lastDirection = steps.last().first
