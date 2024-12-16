@@ -25,10 +25,10 @@ fun part2(name: String) {
 
 fun process(name: String): Pair<List<Path>, Maze> {
     val maze = readInput(name)
-    return Pair(dfs(Path(listOf(Pair(Direction.RIGHT, maze.start)), 0), maze), maze)
+    return Pair(bfs(Path(listOf(Pair(Direction.RIGHT, maze.start)), 0), maze), maze)
 }
 
-fun dfs(initialPath: Path, maze: Maze): List<Path> {
+fun bfs(initialPath: Path, maze: Maze): List<Path> {
     val pathsToEnd = mutableListOf<Path>()
     var paths = listOf(initialPath)
     while (paths.isNotEmpty()) {
@@ -37,6 +37,11 @@ fun dfs(initialPath: Path, maze: Maze): List<Path> {
             for ((direction, xy) in maze.freeFieldsAround(path.lastXY())) {
                 val nextPath = path.step(direction, xy)
                 if (maze.cost(xy) == Int.MAX_VALUE || nextPath.cost <= maze.cost(xy) + 1000) {
+                    // 1000 tolerance because of this situation
+                    // where one path already made the corner
+                    // #^#
+                    // >!#
+                    // #^#
                     if (nextPath.cost < maze.cost(xy)) {
                         maze.cost(xy, nextPath.cost)
                     }
