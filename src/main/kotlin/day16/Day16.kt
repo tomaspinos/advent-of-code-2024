@@ -25,7 +25,8 @@ fun part2(name: String) {
 
 fun process(name: String): Pair<List<Path>, Maze> {
     val maze = readInput(name)
-    return Pair(bfs(Path(listOf(Pair(Direction.RIGHT, maze.start)), 0), maze), maze)
+    val initialPath = Path(listOf(Pair(Direction.RIGHT, maze.start)), 0)
+    return Pair(bfs(initialPath, maze), maze)
 }
 
 fun bfs(initialPath: Path, maze: Maze): List<Path> {
@@ -37,46 +38,18 @@ fun bfs(initialPath: Path, maze: Maze): List<Path> {
             for ((direction, xy) in maze.freeFieldsAround(path.lastXY())) {
                 val nextPath = path.step(direction, xy)
                 if (maze.cost(xy) == Int.MAX_VALUE || nextPath.cost <= maze.cost(xy) + 1000) {
-                    // 1000 tolerance because of this situation
-                    // where one path already made the corner
+                    // 1000 tolerance because of the situation, where one path has already made the corner
                     // #^#
                     // >!#
                     // #^#
-                    if (nextPath.cost < maze.cost(xy)) {
-                        maze.cost(xy, nextPath.cost)
-                    }
-                    if (xy == maze.end) {
-                        pathsToEnd.add(nextPath)
-                    } else {
-                        nextPaths.add(nextPath)
-                    }
+                    if (nextPath.cost < maze.cost(xy)) maze.cost(xy, nextPath.cost)
+                    if (xy == maze.end) pathsToEnd.add(nextPath) else nextPaths.add(nextPath)
                 }
             }
         }
         paths = nextPaths
     }
     return pathsToEnd
-}
-
-fun print(paths: List<Path>, Os: Boolean, maze: Maze) {
-    val canvas = Array(maze.height) { Array(maze.width) { '.' } }
-    for (y in maze.fields.indices) {
-        for (x in maze.fields[y].indices) {
-            when (maze.fields[y][x]) {
-                Field.WALL -> canvas[y][x] = '#'
-                Field.FREE -> canvas[y][x] = '.'
-                Field.START -> canvas[y][x] = 'S'
-                Field.END -> canvas[y][x] = 'E'
-            }
-        }
-    }
-    for (path in paths) {
-        for ((direction, xy) in path.steps) {
-            canvas[xy.y][xy.x] = if (Os) 'O' else direction.ch
-        }
-    }
-    canvas.forEach { println(it.joinToString("")) }
-    println()
 }
 
 fun readInput(name: String): Maze {
@@ -104,6 +77,27 @@ fun readInput(name: String): Maze {
         }
     }
     return Maze(width, height, map, start, end)
+}
+
+fun print(paths: List<Path>, Os: Boolean, maze: Maze) {
+    val canvas = Array(maze.height) { Array(maze.width) { '.' } }
+    for (y in maze.fields.indices) {
+        for (x in maze.fields[y].indices) {
+            when (maze.fields[y][x]) {
+                Field.WALL -> canvas[y][x] = '#'
+                Field.FREE -> canvas[y][x] = '.'
+                Field.START -> canvas[y][x] = 'S'
+                Field.END -> canvas[y][x] = 'E'
+            }
+        }
+    }
+    for (path in paths) {
+        for ((direction, xy) in path.steps) {
+            canvas[xy.y][xy.x] = if (Os) 'O' else direction.ch
+        }
+    }
+    canvas.forEach { println(it.joinToString("")) }
+    println()
 }
 
 enum class Field { WALL, FREE, START, END }
@@ -147,9 +141,6 @@ data class Path(val steps: List<Pair<Direction, XY>>, val cost: Int) {
 
     fun step(direction: Direction, xy: XY): Path {
         val lastDirection = steps.last().first
-        return Path(
-            steps + Pair(direction, xy),
-            cost + (if (direction == lastDirection) 1 else 1001)
-        )
+        return Path(steps + Pair(direction, xy), cost + (if (direction == lastDirection) 1 else 1001))
     }
 }
