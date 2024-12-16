@@ -4,33 +4,56 @@ import common.XY
 import common.resourceFile
 
 fun main() {
-    part1()
+    part1("/day16.txt")
+    part2("/day16.txt")
 }
 
-fun part1() = process("/day16.txt")
-
-fun process(name: String) {
-    val maze = readInput(name)
-    go(listOf(Path(listOf(Pair(Direction.RIGHT, maze.start)), 0)), maze)
+fun part1(name: String) {
+    val (_, maze) = process(name)
     println(maze.cost(maze.end))
 }
 
-fun go(paths: List<Path>, maze: Maze) {
-//    print(paths, maze)
-    val nextPaths = mutableListOf<Path>()
-    for (path in paths) {
-        for ((direction, xy) in maze.freeFieldsAround(path.lastXY())) {
-            val nextPath = path.step(direction, xy)
-            if (nextPath.cost < maze.cost(xy)) {
-                maze.cost(xy, nextPath.cost)
-                if (xy != maze.end) nextPaths.add(nextPath)
-            }
-        }
-    }
-    if (nextPaths.isNotEmpty()) go(nextPaths, maze)
+fun part2(name: String) {
+    val (pathsToEnd, _) = process(name)
+    val minCost = pathsToEnd.map { it.cost }.min()
+    val bestPaths = pathsToEnd.filter { it.cost == minCost }
+    val steps = bestPaths
+        .flatMap { path -> path.steps.map { step -> step.second } }
+        .toSet()
+    println(steps.size)
 }
 
-fun print(paths: List<Path>, maze: Maze) {
+fun process(name: String): Pair<List<Path>, Maze> {
+    val maze = readInput(name)
+    return Pair(dfs(Path(listOf(Pair(Direction.RIGHT, maze.start)), 0), maze), maze)
+}
+
+fun dfs(initialPath: Path, maze: Maze): List<Path> {
+    val pathsToEnd = mutableListOf<Path>()
+    var paths = listOf(initialPath)
+    while (paths.isNotEmpty()) {
+        val nextPaths = mutableListOf<Path>()
+        for (path in paths) {
+            for ((direction, xy) in maze.freeFieldsAround(path.lastXY())) {
+                val nextPath = path.step(direction, xy)
+                if (maze.cost(xy) == Int.MAX_VALUE || nextPath.cost <= maze.cost(xy) + 1000) {
+                    if (nextPath.cost < maze.cost(xy)) {
+                        maze.cost(xy, nextPath.cost)
+                    }
+                    if (xy == maze.end) {
+                        pathsToEnd.add(nextPath)
+                    } else {
+                        nextPaths.add(nextPath)
+                    }
+                }
+            }
+        }
+        paths = nextPaths
+    }
+    return pathsToEnd
+}
+
+fun print(paths: List<Path>, Os: Boolean, maze: Maze) {
     val canvas = Array(maze.height) { Array(maze.width) { '.' } }
     for (y in maze.fields.indices) {
         for (x in maze.fields[y].indices) {
@@ -44,7 +67,7 @@ fun print(paths: List<Path>, maze: Maze) {
     }
     for (path in paths) {
         for ((direction, xy) in path.steps) {
-            canvas[xy.y][xy.x] = direction.ch
+            canvas[xy.y][xy.x] = if (Os) 'O' else direction.ch
         }
     }
     canvas.forEach { println(it.joinToString("")) }
@@ -95,7 +118,9 @@ data class Maze(
     val end: XY
 ) {
     val costs: Array<Array<Int>> = Array(height) { Array(width) { Int.MAX_VALUE } }
+
     fun field(xy: XY): Field = fields[xy.y][xy.x]
+
     fun freeFieldsAround(xy: XY): List<Pair<Direction, XY>> =
         listOf(
             Pair(Direction.LEFT, xy.left()),
@@ -106,6 +131,7 @@ data class Maze(
             .filter { field(it.second) == Field.FREE || field(it.second) == Field.END }
 
     fun cost(xy: XY): Int = costs[xy.y][xy.x]
+
     fun cost(xy: XY, cost: Int) {
         costs[xy.y][xy.x] = cost
     }
@@ -113,12 +139,12 @@ data class Maze(
 
 data class Path(val steps: List<Pair<Direction, XY>>, val cost: Int) {
     fun lastXY(): XY = steps.last().second
+
     fun step(direction: Direction, xy: XY): Path {
-        return if (steps.isNotEmpty()) {
-            val lastDirection = steps.last().first
-            Path(steps + Pair(direction, xy), cost + (if (direction == lastDirection) 1 else 1001))
-        } else {
-            Path(steps + Pair(direction, xy), cost + 1)
-        }
+        val lastDirection = steps.last().first
+        return Path(
+            steps + Pair(direction, xy),
+            cost + (if (direction == lastDirection) 1 else 1001)
+        )
     }
 }
