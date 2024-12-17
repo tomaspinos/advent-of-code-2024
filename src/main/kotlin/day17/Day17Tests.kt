@@ -11,6 +11,9 @@ fun main() {
         0
     ).executeAndPrint()
 
+    // 202400000000000 too low
+    // 2024000000000000 too high
+
     var i = Int.MAX_VALUE
     while (i > 0) {
         println(i)
