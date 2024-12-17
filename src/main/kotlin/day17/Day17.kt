@@ -1,39 +1,45 @@
 package day17
 
 import common.resourceFile
-import kotlin.math.pow
+
+val pow2 = Array<Long>(63) { 0 }
 
 fun main() {
+    initPow2()
     process("/day17.txt")
+}
+
+fun initPow2() {
+    pow2[0] = 1
+    for (i in 0..<62) pow2[i + 1] = pow2[i] * 2
 }
 
 fun process(name: String) {
     val (a, b, c, program) = readInput(name)
     val computer = Computer(a, b, c, program, 0)
-    computer.executeAndPrint()
+    val output = computer.executeAndPrint()
+    println(output)
 }
 
 fun readInput(name: String): Input {
     val lines = resourceFile(name).readLines()
-    val a = lines[0].split(": ")[1].toInt()
-    val b = lines[1].split(": ")[1].toInt()
-    val c = lines[2].split(": ")[1].toInt()
+    val a = lines[0].split(": ")[1].toLong()
+    val b = lines[1].split(": ")[1].toLong()
+    val c = lines[2].split(": ")[1].toLong()
     val program = lines[4].split(": ")[1].split(",").map { it.toInt() }
     return Input(a, b, c, program)
 }
 
-data class Input(val a: Int, val b: Int, val c: Int, val program: List<Int>)
+data class Input(val a: Long, val b: Long, val c: Long, val program: List<Int>)
 
-class Computer(var a: Int, var b: Int, var c: Int, val program: List<Int>, var pointer: Int) {
+class Computer(var a: Long, var b: Long, var c: Long, val program: List<Int>, var pointer: Int) {
     val output = mutableListOf<Int>()
 
-    fun executeAndPrint() {
-        //println("($a, $b, $c), ($program)")
+    fun executeAndPrint(): String {
         while (!isFinished()) {
             executeInstruction()
         }
-        println("program size = ${program.size} | output size = ${output.size}")
-        println(output.joinToString(","))
+        return output.joinToString(",")
     }
 
     fun isFinished(): Boolean = pointer >= program.size
@@ -44,13 +50,14 @@ class Computer(var a: Int, var b: Int, var c: Int, val program: List<Int>, var p
         when (instruction) {
             0 -> {
                 // adv
-                // a / (2 ˆ combo operand)
-                a  = (a.toDouble() / ((2.0).pow(comboOperand(operand)))).toInt()
+                val comboOperand = comboOperand(operand)
+                if (comboOperand > 62) throw RuntimeException("Combo operand too big: $comboOperand")
+                a  = a / pow2[comboOperand.toInt()]
                 pointer += 2
             }
             1 -> {
                 // bxl
-                b = (b xor operand)
+                b = (b xor operand.toLong())
                 pointer += 2
             }
             2 -> {
@@ -60,7 +67,7 @@ class Computer(var a: Int, var b: Int, var c: Int, val program: List<Int>, var p
             }
             3 -> {
                 // jnz
-                if (a == 0) {
+                if (a == 0L) {
                     pointer += 2
                 } else {
                     pointer = operand
@@ -73,23 +80,27 @@ class Computer(var a: Int, var b: Int, var c: Int, val program: List<Int>, var p
             }
             5 -> {
                 // out
-                output.add(comboOperand(operand) % 8)
+                output.add((comboOperand(operand) % 8).toInt())
                 pointer += 2
             }
             6 -> {
                 // bdv
-                b  = (a.toDouble() / ((2.0).pow(comboOperand(operand)))).toInt()
+                val comboOperand = comboOperand(operand)
+                if (comboOperand > 62) throw RuntimeException("Combo operand too big: $comboOperand")
+                b  = a / pow2[comboOperand.toInt()]
                 pointer += 2
             }
             7 -> {
                 // cdv
-                c  = (a.toDouble() / ((2.0).pow(comboOperand(operand)))).toInt()
+                val comboOperand = comboOperand(operand)
+                if (comboOperand > 62) throw RuntimeException("Combo operand too big: $comboOperand")
+                c  = a / pow2[comboOperand.toInt()]
                 pointer += 2
             }
         }
     }
 
-    fun comboOperand(operand: Int): Int {
+    fun comboOperand(operand: Int): Long {
         return when (operand) {
             0 -> 0
             1 -> 1
