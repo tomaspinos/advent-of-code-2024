@@ -10,10 +10,7 @@ fun main() {
 fun process(name: String) {
     val (a, b, c, program) = readInput(name)
     val computer = Computer(a, b, c, program, 0)
-    while (!computer.isFinished()) {
-        computer.executeInstruction()
-    }
-    println(computer.output.joinToString(","))
+    computer.executeAndPrint()
 }
 
 fun readInput(name: String): Input {
@@ -30,6 +27,15 @@ data class Input(val a: Int, val b: Int, val c: Int, val program: List<Int>)
 class Computer(var a: Int, var b: Int, var c: Int, val program: List<Int>, var pointer: Int) {
     val output = mutableListOf<Int>()
 
+    fun executeAndPrint() {
+        //println("($a, $b, $c), ($program)")
+        while (!isFinished()) {
+            executeInstruction()
+        }
+        println("program size = ${program.size} | output size = ${output.size}")
+        println(output.joinToString(","))
+    }
+
     fun isFinished(): Boolean = pointer >= program.size
 
     fun executeInstruction() {
@@ -38,6 +44,7 @@ class Computer(var a: Int, var b: Int, var c: Int, val program: List<Int>, var p
         when (instruction) {
             0 -> {
                 // adv
+                // a / (2 ˆ combo operand)
                 a  = (a.toDouble() / ((2.0).pow(comboOperand(operand)))).toInt()
                 pointer += 2
             }

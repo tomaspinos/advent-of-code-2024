@@ -1,5 +1,26 @@
 package day17
 
 fun main() {
-    process("/day17sample1.txt")
+    //Computer(202400, 0, 0, listOf(0, 3, 5, 4, 3, 0), 0).executeAndPrint()
+
+    Computer(
+        0,
+        0,
+        0,
+        listOf(2, 4, 1, 3, 7, 5, 1, 5, 0, 3, 4, 3, 5, 5, 3, 0),
+        0
+    ).executeAndPrint()
+
+    var i = Int.MAX_VALUE
+    while (i > 0) {
+        println(i)
+        Computer(
+            i,
+            0,
+            0,
+            listOf(2, 4, 1, 3, 7, 5, 1, 5, 0, 3, 4, 3, 5, 5, 3, 0),
+            0
+        ).executeAndPrint()
+        i--
+    }
 }
