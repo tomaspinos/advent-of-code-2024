@@ -1,6 +1,7 @@
 package day19
 
 import common.resourceFile
+import java.util.concurrent.atomic.AtomicLong
 
 fun main() {
     process("/day19.txt")
@@ -16,14 +17,21 @@ fun process(name: String) {
     }
 
     var matchCount = 0
+    var allOptions = 0L
+    val cache = mutableMapOf<String, Long>()
+
     for (word in words) {
         println(word)
         val match = engine.matchWord(word)
         println("  $match")
-        if (match) matchCount++
+        if (match) {
+            matchCount++
+            allOptions += engine.countOptions(word, cache)
+        }
     }
 
     println(matchCount)
+    println(allOptions)
 }
 
 fun readInput(name: String): Input {
@@ -67,6 +75,31 @@ class Engine {
             }
         }
         return false
+    }
+
+    fun countOptions(word: String, cache: MutableMap<String, Long>): Long {
+        val counter = AtomicLong(0)
+        countOptions(word, 0, cache, counter)
+        return counter.get()
+    }
+
+    fun countOptions(word: String, index: Int, cache: MutableMap<String, Long>, counter: AtomicLong) {
+        println("$word, $index")
+        val wordToCheck = word.substring(index)
+        val knownCount = cache[wordToCheck]
+        if (knownCount != null) {
+            counter.addAndGet(knownCount)
+            return
+        }
+        val matches = findMatches(wordToCheck)
+        for (match in matches) {
+            if (match.length == wordToCheck.length) {
+                val count = counter.incrementAndGet()
+                cache[wordToCheck] = count
+            } else {
+                countOptions(word.substring(match.length), cache, counter)
+            }
+        }
     }
 }
 
