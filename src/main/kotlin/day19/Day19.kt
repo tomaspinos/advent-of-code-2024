@@ -8,7 +8,11 @@ fun main() {
 }
 
 fun process(name: String) {
-    val (patterns, words) = readInput(name)
+    process(readInput(name))
+}
+
+fun process(input: Input) {
+    val (patterns, words) = input
 
     val engine = Engine()
 
@@ -18,7 +22,6 @@ fun process(name: String) {
 
     var matchCount = 0
     var allOptions = 0L
-    val cache = mutableMapOf<String, Long>()
 
     for (word in words) {
         println(word)
@@ -26,7 +29,9 @@ fun process(name: String) {
         println("  $match")
         if (match) {
             matchCount++
-            allOptions += engine.countOptions(word, cache)
+            val options = engine.countOptions(word)
+            println("  options: $options")
+            allOptions += options
         }
     }
 
@@ -58,10 +63,10 @@ class Engine {
 
     fun findMatches(word: String): List<Node> {
         val matchingNode = nodes[word[0]]
-        if (matchingNode != null) {
-            return matchingNode.findMatches(word, 1)
+        return if (matchingNode != null) {
+            matchingNode.findMatches(word, 1)
         } else {
-            return listOf()
+            listOf()
         }
     }
 
@@ -77,27 +82,44 @@ class Engine {
         return false
     }
 
-    fun countOptions(word: String, cache: MutableMap<String, Long>): Long {
-        val counter = AtomicLong(0)
-        countOptions(word, 0, cache, counter)
-        return counter.get()
+    /**
+     * a,aa,b
+     * aabaa
+     *   a|a|b|a|a
+     *   a|a|b|aa
+     *   aa|b|a|a
+     *   aa|b|aa
+     */
+    fun countOptions(word: String): Long {
+        val tails = mutableMapOf<String, AtomicLong>()
+        countOptions(word, tails)
+        return tails[word]!!.get()
     }
 
-    fun countOptions(word: String, index: Int, cache: MutableMap<String, Long>, counter: AtomicLong) {
-        println("$word, $index")
-        val wordToCheck = word.substring(index)
-        val knownCount = cache[wordToCheck]
-        if (knownCount != null) {
-            counter.addAndGet(knownCount)
+    fun countOptions(word: String, tails: MutableMap<String, AtomicLong>) {
+        val count = tails[word]
+        if (count != null) {
             return
         }
-        val matches = findMatches(wordToCheck)
+        val matches = findMatches(word)
         for (match in matches) {
-            if (match.length == wordToCheck.length) {
-                val count = counter.incrementAndGet()
-                cache[wordToCheck] = count
+            if (match.length == word.length) {
+                if (tails[word] != null) {
+                    tails[word]!!.incrementAndGet()
+                } else {
+                    tails[word] = AtomicLong(1)
+                }
             } else {
-                countOptions(word.substring(match.length), cache, counter)
+                val tail = word.substring(match.length)
+                countOptions(tail, tails)
+                val tailCount = tails[tail]
+                if (tailCount != null) {
+                    if (tails[word] != null) {
+                        tails[word]!!.addAndGet(tailCount!!.get())
+                    } else {
+                        tails[word] = AtomicLong(tailCount!!.get())
+                    }
+                }
             }
         }
     }
