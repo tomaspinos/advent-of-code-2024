@@ -11,8 +11,8 @@ fun main() {
 
 fun part1(name: String, cheatCostLimit: Int) {
     val room = readInput(name)
-    val path = bfs(room)
-    val cheats = findCheats(room)
+    val path = findInitialPath(room)
+    val cheats = findCheats1(path, room)
     print(path, emptyList(), room)
     val goodCheatCount = cheats.groupBy { it.second }
         .filter { it.key >= cheatCostLimit }
@@ -23,7 +23,7 @@ fun part1(name: String, cheatCostLimit: Int) {
 
 fun part2(name: String, cheatCostLimit: Int) {
     val room = readInput(name)
-    val path = bfs(room)
+    val path = findInitialPath(room)
 
     val cheats = mutableListOf<Cheat>()
 
@@ -39,7 +39,7 @@ fun part2(name: String, cheatCostLimit: Int) {
         }
     }
 
-    cheats.groupBy { it.savedSteps }.forEach { savedSteps, cheats ->
+    cheats.groupBy { it.savedSteps }.forEach { (savedSteps, cheats) ->
         println("${cheats.size} cheats $savedSteps picoseconds") }
 
     println(cheats.size)
@@ -47,22 +47,14 @@ fun part2(name: String, cheatCostLimit: Int) {
 
 fun taxicabDistance(from: XY, to: XY): Int = abs(from.x - to.x) + abs(from.y - to.y)
 
-fun bfs(room: Room): Path {
-    var paths = listOf(Path(listOf(room.start), 0))
-    while (paths.isNotEmpty()) {
-        val nextPaths = mutableListOf<Path>()
-        for (path in paths) {
-            for (xy in room.freeFieldsAround(path.lastXY())) {
-                val nextPath = path.step(xy)
-                if (nextPath.cost <= room.cost(xy)) {
-                    if (nextPath.cost < room.cost(xy)) room.cost(xy, nextPath.cost)
-                    if (xy == room.end) return nextPath else nextPaths.add(nextPath)
-                }
-            }
-        }
-        paths = nextPaths
+fun findInitialPath(room: Room): Path {
+    var path = Path(listOf(room.start), 0)
+    while (true) {
+        val xy = room.nextFreeField(path.lastXY(), path)
+        val nextPath = path.step(xy)
+        if (xy == room.end) return nextPath
+        path = nextPath
     }
-    throw IllegalStateException("No path found")
 }
 
 /**
@@ -72,23 +64,23 @@ fun bfs(room: Room): Path {
  * #
  * O
  */
-fun findCheats(room: Room): List<Pair<XY, Int>> {
+fun findCheats1(initialPath: Path, room: Room): List<Pair<XY, Int>> {
     val cheats = mutableListOf<Pair<XY, Int>>()
     for (y in 1..<room.height - 1) {
         for (x in 1..<room.width - 1) {
             val xy = XY(x, y)
             if (room.field(xy) == Field.WALL) {
-                checkCheat(xy, xy.left(), xy.right(), room, cheats)
-                checkCheat(xy, xy.up(), xy.down(), room, cheats)
+                checkCheat1(xy, xy.left(), xy.right(), initialPath, cheats)
+                checkCheat1(xy, xy.up(), xy.down(), initialPath, cheats)
             }
         }
     }
     return cheats
 }
 
-fun checkCheat(cheat: XY, from: XY, to: XY, room: Room, cheats: MutableList<Pair<XY, Int>>) {
-    val fromCost = room.cost(from)
-    val totCost = room.cost(to)
+fun checkCheat1(cheat: XY, from: XY, to: XY, initialPath: Path, cheats: MutableList<Pair<XY, Int>>) {
+    val fromCost = initialPath.steps.indexOf(from)
+    val totCost = initialPath.steps.indexOf(to)
     if (fromCost < Int.MAX_VALUE && totCost < Int.MAX_VALUE) {
         cheats.add(Pair(cheat, abs(fromCost - totCost) - 2))
     }
@@ -146,19 +138,12 @@ data class Room(
     val start: XY,
     val end: XY
 ) {
-    val costs: Array<Array<Int>> = Array(height) { Array(width) { Int.MAX_VALUE } }
-
-    fun freeFieldsAround(xy: XY): List<XY> =
+    fun nextFreeField(xy: XY, path: Path): XY =
         listOf(xy.up(), xy.down(), xy.left(), xy.right())
             .filter { field(it) == Field.FREE || field(it) == Field.START || field(it) == Field.END }
+            .first { !path.steps.contains(it) }
 
     fun field(xy: XY): Field = fields[xy.y][xy.x]
-
-    fun cost(xy: XY): Int = costs[xy.y][xy.x]
-
-    fun cost(xy: XY, cost: Int) {
-        costs[xy.y][xy.x] = cost
-    }
 }
 
 data class Path(val steps: List<XY>, val cost: Int) {
