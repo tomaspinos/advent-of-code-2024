@@ -1,7 +1,6 @@
 package day19
 
 import common.resourceFile
-import java.util.concurrent.atomic.AtomicLong
 
 fun main() {
     process("/day19.txt")
@@ -91,35 +90,25 @@ class Engine {
      *   aa|b|aa
      */
     fun countOptions(word: String): Long {
-        val tails = mutableMapOf<String, AtomicLong>()
-        countOptions(word, tails)
-        return tails[word]!!.get()
+        val tailCounts = Array(word.length) { 0L }
+        countOptions(word, tailCounts)
+        return tailCounts[0]
     }
 
-    fun countOptions(word: String, tails: MutableMap<String, AtomicLong>) {
-        val count = tails[word]
-        if (count != null) {
+    fun countOptions(word: String, tailCounts: Array<Long>) {
+        val count = tailCounts[tailCounts.size - word.length]
+        if (count > 0) {
             return
         }
         val matches = findMatches(word)
         for (match in matches) {
             if (match.length == word.length) {
-                if (tails[word] != null) {
-                    tails[word]!!.incrementAndGet()
-                } else {
-                    tails[word] = AtomicLong(1)
-                }
+                tailCounts[tailCounts.size - word.length]++
             } else {
                 val tail = word.substring(match.length)
-                countOptions(tail, tails)
-                val tailCount = tails[tail]
-                if (tailCount != null) {
-                    if (tails[word] != null) {
-                        tails[word]!!.addAndGet(tailCount!!.get())
-                    } else {
-                        tails[word] = AtomicLong(tailCount!!.get())
-                    }
-                }
+                countOptions(tail, tailCounts)
+                val tailCount = tailCounts[tailCounts.size - tail.length]
+                tailCounts[tailCounts.size - word.length] += tailCount
             }
         }
     }
