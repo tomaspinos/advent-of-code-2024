@@ -55,7 +55,7 @@ class Engine {
         if (matchingNode != null) {
             matchingNode.addPattern(pattern, 1)
         } else {
-            val childNode = Node(ch, 1, null, mutableMapOf())
+            val childNode = Node(ch, 1, false, mutableMapOf())
             nodes[ch] = childNode
             childNode.addPattern(pattern, 1)
         }
@@ -128,20 +128,20 @@ class Engine {
 data class Node(
     val ch: Char,
     val length: Int,
-    var pattern: String? = null,
+    var patternEnd: Boolean,
     val childNodes: MutableMap<Char, Node>
 ) {
 
     fun addPattern(pattern: String, index: Int) {
         if (index == pattern.length) {
-            this.pattern = pattern
+            patternEnd = true
         } else {
             val ch = pattern[index]
             val matchingNode = childNodes[ch]
             if (matchingNode != null) {
                 matchingNode.addPattern(pattern, index + 1)
             } else {
-                val childNode = Node(ch, index + 1, null, mutableMapOf())
+                val childNode = Node(ch, index + 1, false, mutableMapOf())
                 childNodes[ch] = childNode
                 childNode.addPattern(pattern, index + 1)
             }
@@ -150,12 +150,12 @@ data class Node(
 
     fun findMatches(word: String, index: Int): List<Node> {
         if (index == word.length) {
-            if (pattern != null) {
+            if (patternEnd) {
                 return listOf(this)
             }
         } else {
             val resultingNodes = mutableListOf<Node>()
-            if (pattern != null) {
+            if (patternEnd) {
                 resultingNodes += this
             }
             val matchingNode = childNodes[word[index]]
