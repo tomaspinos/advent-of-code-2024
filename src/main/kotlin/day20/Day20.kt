@@ -5,27 +5,38 @@ import common.resourceFile
 import kotlin.math.abs
 
 fun main() {
-    process("/day20.txt")
+    //part1("/day20.txt", 100)
+    part2("/day20.txt", 100)
 }
 
-fun process(name: String) {
+fun part1(name: String, cheatCostLimit: Int) {
     val room = readInput(name)
-    val initialPath = Path(listOf(room.start), 0)
-    val path = bfs(initialPath, room)!!
+    val path = bfs(room)
     val cheats = findCheats(room)
     print(path, cheats.map { it.first }, room)
     cheats.groupBy { it.second }
         .toSortedMap { o1, o2 -> o1 - o2 }
         .forEach { cost, cheats -> println("${cheats.size}: ${cost}") }
     val goodCheatCount = cheats.groupBy { it.second }
-        .filter { it.key >= 100 }
+        .filter { it.key >= cheatCostLimit }
         .map { it.value.size }
         .sum()
     println(goodCheatCount)
 }
 
-fun bfs(initialPath: Path, room: Room): Path? {
-    var paths = listOf(initialPath)
+fun part2(name: String, cheatCostLimit: Int) {
+    val room = readInput(name)
+    val path = bfs(room)
+    val cheats = mutableListOf<Cheat2>()
+    for (i in 0..<path.steps.size) {
+        cheats.addAll(bfs2(i, path, room, cheatCostLimit))
+    }
+    val goodCheatCount = cheats.groupBy { Pair(it.from, it.to) }.keys.size
+    println(goodCheatCount)
+}
+
+fun bfs(room: Room): Path {
+    var paths = listOf(Path(listOf(room.start), 0))
     while (paths.isNotEmpty()) {
         val nextPaths = mutableListOf<Path>()
         for (path in paths) {
@@ -39,7 +50,49 @@ fun bfs(initialPath: Path, room: Room): Path? {
         }
         paths = nextPaths
     }
-    return null
+    throw IllegalStateException("No path found")
+}
+
+fun bfs2(stepIndex: Int, path: Path, room: Room, cheatCostLimit: Int): List<Cheat2> {
+    val from = path.steps[stepIndex]
+
+    println("$stepIndex, $from")
+
+    val goodCheatPaths = mutableListOf<Cheat2>()
+
+    var cheatPaths = listOf(Path(listOf(from), stepIndex))
+    val costs = room.copyCosts()
+
+    while (cheatPaths.isNotEmpty()) {
+        //print(path, cheatPaths.flatMap { it.steps }.toSet().toList(), room)
+        var nextCheatPaths = mutableListOf<Path>()
+        for (cheatPath in cheatPaths) {
+            if (cheatPath.steps.size > 20) continue
+            for (xy in room.wallsOrPathAround(cheatPath.lastXY(), path, cheatPath)) {
+                val nextCheatPath = cheatPath.step(xy)
+                if (path.steps.contains(xy)) {
+                    val initialPathCost = costs[xy.y][xy.x]
+                    val cheatPathCost = nextCheatPath.cost
+                    if (cheatPathCost <= initialPathCost - cheatCostLimit) {
+                        goodCheatPaths.add(Cheat2(nextCheatPath.steps.first(), xy,  initialPathCost - cheatPathCost))
+                    }
+                    nextCheatPaths.add(nextCheatPath)
+                } else {
+                    if (nextCheatPath.cost <= costs[xy.y][xy.x]) {
+                        if (nextCheatPath.cost < costs[xy.y][xy.x]) {
+                            costs[xy.y][xy.x] = nextCheatPath.cost
+                        }
+                        nextCheatPaths.add(nextCheatPath)
+                    }
+                }
+            }
+        }
+        cheatPaths = nextCheatPaths
+    }
+
+    //println(goodCheatPaths)
+
+    return goodCheatPaths
 }
 
 /**
@@ -109,7 +162,7 @@ fun print(path: Path, cheats: List<XY>, room: Room) {
                 Field.END -> canvas[y][x] = 'E'
             }
     for (xy in path.steps) canvas[xy.y][xy.x] = 'O'
-    for (xy in cheats) canvas[xy.y][xy.x] = 'X'
+    for (xy in cheats) canvas[xy.y][xy.x] = '+'
     canvas.forEach { println(it.joinToString("")) }
     println()
 }
@@ -129,12 +182,25 @@ data class Room(
         listOf(xy.up(), xy.down(), xy.left(), xy.right())
             .filter { field(it) == Field.FREE || field(it) == Field.START || field(it) == Field.END }
 
+    fun wallsOrPathAround(xy: XY, initialPath: Path, cheatPath: Path): List<XY> =
+        listOf(xy.up(), xy.down(), xy.left(), xy.right())
+            .filter { (x, y) -> x > 0 && x < width - 1 && y > 0 && y < height - 1 }
+            .filter { (field(it) == Field.WALL || initialPath.steps.contains(it)) && !cheatPath.steps.contains(it) }
+
     fun field(xy: XY): Field = fields[xy.y][xy.x]
 
     fun cost(xy: XY): Int = costs[xy.y][xy.x]
 
     fun cost(xy: XY, cost: Int) {
         costs[xy.y][xy.x] = cost
+    }
+
+    fun copyCosts(): Array<Array<Int>> {
+        val copy = Array(height) { Array(width) { Int.MAX_VALUE } }
+        for (y in costs.indices)
+            for (x in costs[y].indices)
+                copy[y][x] = costs[y][x]
+        return copy
     }
 }
 
@@ -143,3 +209,5 @@ data class Path(val steps: List<XY>, val cost: Int) {
 
     fun step(xy: XY): Path = Path(steps + xy, cost + 1)
 }
+
+data class Cheat2(val from: XY, val to: XY, val savedSteps: Int)
