@@ -58,7 +58,7 @@ fun bfs2(stepIndex: Int, path: Path, room: Room, cheatCostLimit: Int): List<Chea
 
     println("$stepIndex, $from")
 
-    val goodCheatPaths = mutableListOf<Cheat2>()
+    val goodCheats = mutableListOf<Cheat2>()
 
     var cheatPaths = listOf(Path(listOf(from), stepIndex))
     val costs = room.copyCosts()
@@ -74,9 +74,9 @@ fun bfs2(stepIndex: Int, path: Path, room: Room, cheatCostLimit: Int): List<Chea
                     val initialPathCost = costs[xy.y][xy.x]
                     val cheatPathCost = nextCheatPath.cost
                     if (cheatPathCost <= initialPathCost - cheatCostLimit) {
-                        goodCheatPaths.add(Cheat2(nextCheatPath.steps.first(), xy,  initialPathCost - cheatPathCost))
+                        goodCheats.add(Cheat2(nextCheatPath.steps.first(), xy,  initialPathCost - cheatPathCost))
                     }
-                    nextCheatPaths.add(nextCheatPath)
+                    //nextCheatPaths.add(nextCheatPath)
                 } else {
                     if (nextCheatPath.cost <= costs[xy.y][xy.x]) {
                         if (nextCheatPath.cost < costs[xy.y][xy.x]) {
@@ -92,7 +92,7 @@ fun bfs2(stepIndex: Int, path: Path, room: Room, cheatCostLimit: Int): List<Chea
 
     //println(goodCheatPaths)
 
-    return goodCheatPaths
+    return goodCheats
 }
 
 /**
