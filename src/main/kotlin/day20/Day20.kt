@@ -12,37 +12,31 @@ fun main() {
 fun part1(name: String, cheatCostLimit: Int) {
     val room = readInput(name)
     val path = findInitialPath(room)
-    val cheats = findCheats1(path, room)
-    print(path, emptyList(), room)
-    val goodCheatCount = cheats.groupBy { it.second }
-        .filter { it.key >= cheatCostLimit }
-        .map { it.value.size }
-        .sum()
-    println(goodCheatCount)
+    val cheats = findCheats(path, 2, cheatCostLimit)
+    println(cheats.size)
 }
 
 fun part2(name: String, cheatCostLimit: Int) {
     val room = readInput(name)
     val path = findInitialPath(room)
+    val cheats = findCheats(path, 20, cheatCostLimit)
+    println(cheats.size)
+}
 
+fun findCheats(path: Path, cheatDistanceLimit: Int, cheatCostLimit: Int): List<Cheat> {
     val cheats = mutableListOf<Cheat>()
-
     for (i in path.steps.indices) {
         for (j in i + 1 until path.steps.size) {
             val from = path.steps[i]
             val to = path.steps[j]
             val pathDistance = j - i
             val taxicabDistance = taxicabDistance(from, to)
-            if (taxicabDistance <= 20 && pathDistance - taxicabDistance >= cheatCostLimit) {
+            if (taxicabDistance <= cheatDistanceLimit && pathDistance - taxicabDistance >= cheatCostLimit) {
                 cheats.add(Cheat(from, to, pathDistance - taxicabDistance))
             }
         }
     }
-
-    cheats.groupBy { it.savedSteps }.forEach { (savedSteps, cheats) ->
-        println("${cheats.size} cheats $savedSteps picoseconds") }
-
-    println(cheats.size)
+    return cheats
 }
 
 fun taxicabDistance(from: XY, to: XY): Int = abs(from.x - to.x) + abs(from.y - to.y)
@@ -54,35 +48,6 @@ fun findInitialPath(room: Room): Path {
         val nextPath = path.step(xy)
         if (xy == room.end) return nextPath
         path = nextPath
-    }
-}
-
-/**
- * O#O
- *
- * O
- * #
- * O
- */
-fun findCheats1(initialPath: Path, room: Room): List<Pair<XY, Int>> {
-    val cheats = mutableListOf<Pair<XY, Int>>()
-    for (y in 1..<room.height - 1) {
-        for (x in 1..<room.width - 1) {
-            val xy = XY(x, y)
-            if (room.field(xy) == Field.WALL) {
-                checkCheat1(xy, xy.left(), xy.right(), initialPath, cheats)
-                checkCheat1(xy, xy.up(), xy.down(), initialPath, cheats)
-            }
-        }
-    }
-    return cheats
-}
-
-fun checkCheat1(cheat: XY, from: XY, to: XY, initialPath: Path, cheats: MutableList<Pair<XY, Int>>) {
-    val fromCost = initialPath.steps.indexOf(from)
-    val totCost = initialPath.steps.indexOf(to)
-    if (fromCost < Int.MAX_VALUE && totCost < Int.MAX_VALUE) {
-        cheats.add(Pair(cheat, abs(fromCost - totCost) - 2))
     }
 }
 
