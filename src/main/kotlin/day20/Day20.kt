@@ -5,7 +5,7 @@ import common.resourceFile
 import kotlin.math.abs
 
 fun main() {
-    //part1("/day20.txt", 100)
+    part1("/day20.txt", 100)
     part2("/day20.txt", 100)
 }
 
@@ -13,10 +13,7 @@ fun part1(name: String, cheatCostLimit: Int) {
     val room = readInput(name)
     val path = bfs(room)
     val cheats = findCheats(room)
-    print(path, cheats.map { it.first }, room)
-    cheats.groupBy { it.second }
-        .toSortedMap { o1, o2 -> o1 - o2 }
-        .forEach { cost, cheats -> println("${cheats.size}: ${cost}") }
+    print(path, emptyList(), room)
     val goodCheatCount = cheats.groupBy { it.second }
         .filter { it.key >= cheatCostLimit }
         .map { it.value.size }
@@ -27,13 +24,28 @@ fun part1(name: String, cheatCostLimit: Int) {
 fun part2(name: String, cheatCostLimit: Int) {
     val room = readInput(name)
     val path = bfs(room)
-    val cheats = mutableListOf<Cheat2>()
-    for (i in 0..<path.steps.size) {
-        cheats.addAll(bfs2(i, path, room, cheatCostLimit))
+
+    val cheats = mutableListOf<Cheat>()
+
+    for (i in path.steps.indices) {
+        for (j in i + 1 until path.steps.size) {
+            val from = path.steps[i]
+            val to = path.steps[j]
+            val pathDistance = j - i
+            val taxicabDistance = taxicabDistance(from, to)
+            if (taxicabDistance <= 20 && pathDistance - taxicabDistance >= cheatCostLimit) {
+                cheats.add(Cheat(from, to, pathDistance - taxicabDistance))
+            }
+        }
     }
-    val goodCheatCount = cheats.groupBy { Pair(it.from, it.to) }.keys.size
-    println(goodCheatCount)
+
+    cheats.groupBy { it.savedSteps }.forEach { savedSteps, cheats ->
+        println("${cheats.size} cheats $savedSteps picoseconds") }
+
+    println(cheats.size)
 }
+
+fun taxicabDistance(from: XY, to: XY): Int = abs(from.x - to.x) + abs(from.y - to.y)
 
 fun bfs(room: Room): Path {
     var paths = listOf(Path(listOf(room.start), 0))
@@ -51,48 +63,6 @@ fun bfs(room: Room): Path {
         paths = nextPaths
     }
     throw IllegalStateException("No path found")
-}
-
-fun bfs2(stepIndex: Int, path: Path, room: Room, cheatCostLimit: Int): List<Cheat2> {
-    val from = path.steps[stepIndex]
-
-    println("$stepIndex, $from")
-
-    val goodCheats = mutableListOf<Cheat2>()
-
-    var cheatPaths = listOf(Path(listOf(from), stepIndex))
-    val costs = room.copyCosts()
-
-    while (cheatPaths.isNotEmpty()) {
-        //print(path, cheatPaths.flatMap { it.steps }.toSet().toList(), room)
-        var nextCheatPaths = mutableListOf<Path>()
-        for (cheatPath in cheatPaths) {
-            if (cheatPath.steps.size > 20) continue
-            for (xy in room.wallsOrPathAround(cheatPath.lastXY(), path, cheatPath)) {
-                val nextCheatPath = cheatPath.step(xy)
-                if (path.steps.contains(xy)) {
-                    val initialPathCost = costs[xy.y][xy.x]
-                    val cheatPathCost = nextCheatPath.cost
-                    if (cheatPathCost <= initialPathCost - cheatCostLimit) {
-                        goodCheats.add(Cheat2(nextCheatPath.steps.first(), xy,  initialPathCost - cheatPathCost))
-                    }
-                    //nextCheatPaths.add(nextCheatPath)
-                } else {
-                    if (nextCheatPath.cost <= costs[xy.y][xy.x]) {
-                        if (nextCheatPath.cost < costs[xy.y][xy.x]) {
-                            costs[xy.y][xy.x] = nextCheatPath.cost
-                        }
-                        nextCheatPaths.add(nextCheatPath)
-                    }
-                }
-            }
-        }
-        cheatPaths = nextCheatPaths
-    }
-
-    //println(goodCheatPaths)
-
-    return goodCheats
 }
 
 /**
@@ -161,7 +131,7 @@ fun print(path: Path, cheats: List<XY>, room: Room) {
                 Field.START -> canvas[y][x] = 'S'
                 Field.END -> canvas[y][x] = 'E'
             }
-    for (xy in path.steps) canvas[xy.y][xy.x] = 'O'
+    for (xy in path.steps) if (xy != room.start && xy != room.end) canvas[xy.y][xy.x] = 'O'
     for (xy in cheats) canvas[xy.y][xy.x] = '+'
     canvas.forEach { println(it.joinToString("")) }
     println()
@@ -182,11 +152,6 @@ data class Room(
         listOf(xy.up(), xy.down(), xy.left(), xy.right())
             .filter { field(it) == Field.FREE || field(it) == Field.START || field(it) == Field.END }
 
-    fun wallsOrPathAround(xy: XY, initialPath: Path, cheatPath: Path): List<XY> =
-        listOf(xy.up(), xy.down(), xy.left(), xy.right())
-            .filter { (x, y) -> x > 0 && x < width - 1 && y > 0 && y < height - 1 }
-            .filter { (field(it) == Field.WALL || initialPath.steps.contains(it)) && !cheatPath.steps.contains(it) }
-
     fun field(xy: XY): Field = fields[xy.y][xy.x]
 
     fun cost(xy: XY): Int = costs[xy.y][xy.x]
@@ -194,20 +159,11 @@ data class Room(
     fun cost(xy: XY, cost: Int) {
         costs[xy.y][xy.x] = cost
     }
-
-    fun copyCosts(): Array<Array<Int>> {
-        val copy = Array(height) { Array(width) { Int.MAX_VALUE } }
-        for (y in costs.indices)
-            for (x in costs[y].indices)
-                copy[y][x] = costs[y][x]
-        return copy
-    }
 }
 
 data class Path(val steps: List<XY>, val cost: Int) {
     fun lastXY(): XY = steps.last()
-
     fun step(xy: XY): Path = Path(steps + xy, cost + 1)
 }
 
-data class Cheat2(val from: XY, val to: XY, val savedSteps: Int)
+data class Cheat(val from: XY, val to: XY, val savedSteps: Int)
