@@ -1,0 +1,18 @@
+
+Num keypad0
+robot1
+|
+Dir keypad1
+robot2
+|
+Dir keypad2
+robot3
+|
+Dir keypad3
+human
+
+
+robot1 presses keypad0 = presses on keypad1
+robot2 presses keypad1 = presses on keypad2
+robot3 presses keypad2 = presses on keypad3
+human presses keypad3
