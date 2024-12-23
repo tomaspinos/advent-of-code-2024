@@ -8,15 +8,7 @@ fun main() {
 }
 
 fun part1(name: String) {
-    val cons = readInput(name)
-
-    val comps = cons.flatMap { con -> listOf(con.a, con.b) }.distinct()
-
-    val conMap = mutableMapOf<Computer, Set<Computer>>()
-    for (con in cons) {
-        conMap.merge(con.a, setOf(con.b)) { s1, s2 -> s1 + s2 }
-        conMap.merge(con.b, setOf(con.a)) { s1, s2 -> s1 + s2 }
-    }
+    val (comps, conMap) = getComputersAndConnectionMap(readInput(name))
 
     val triples = mutableSetOf<Triple<Computer, Computer, Computer>>()
 
@@ -45,15 +37,7 @@ fun part1(name: String) {
 }
 
 fun part2(name: String) {
-    val cons = readInput(name)
-
-    val comps = cons.flatMap { con -> listOf(con.a, con.b) }.distinct().toMutableList()
-
-    val conMap = mutableMapOf<Computer, Set<Computer>>()
-    for (con in cons) {
-        conMap.merge(con.a, setOf(con.b)) { s1, s2 -> s1 + s2 }
-        conMap.merge(con.b, setOf(con.a)) { s1, s2 -> s1 + s2 }
-    }
+    val (comps, conMap) = getComputersAndConnectionMap(readInput(name))
 
     val cliques = mutableSetOf<MutableSet<Computer>>()
     for (comp in comps) {
@@ -72,6 +56,18 @@ fun part2(name: String) {
 
     val maxClique = cliques.sortedByDescending { it.size }[0]
     println(maxClique.map { it.name }.sorted().joinToString(","))
+}
+
+fun getComputersAndConnectionMap(cons: List<Connection>): Pair<List<Computer>, Map<Computer, Set<Computer>>> {
+    val comps = cons.flatMap { con -> listOf(con.a, con.b) }.distinct()
+
+    val conMap = mutableMapOf<Computer, Set<Computer>>()
+    for (con in cons) {
+        conMap.merge(con.a, setOf(con.b)) { s1, s2 -> s1 + s2 }
+        conMap.merge(con.b, setOf(con.a)) { s1, s2 -> s1 + s2 }
+    }
+
+    return Pair(comps, conMap)
 }
 
 fun readInput(name: String): List<Connection> {
