@@ -1,9 +1,9 @@
 package day21
 
 fun main() {
-    initializeKeyPaths()
-    val paths = type1(listOf(0, 2, 9, A), 0, A, listOf())
-    paths.forEach { it.print(listOf(0, 2, 9, A)) }
+    computeNumPaths()
+//    val paths = type1(listOf(0, 2, 9, A), 0, A, listOf())
+//    paths.forEach { it.print(listOf(0, 2, 9, A)) }
 //    part1(
 //        listOf(
 //            listOf(0, 2, 9, A),

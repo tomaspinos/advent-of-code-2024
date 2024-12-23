@@ -13,6 +13,7 @@ data class XY(val x: Int, val y: Int) {
     fun down(): XY = XY(x, y + 1)
     fun left(): XY = XY(x - 1, y)
     fun right(): XY = XY(x + 1, y)
+    fun neighbors(): List<XY> = listOf(left(), up(), right(), down())
     fun <T> isValid(array: Array<Array<T>>): Boolean = y in array.indices && x in array[0].indices
     fun isValid(width: Int, height: Int): Boolean = y in 0..<height && x in 0..<width
 }
