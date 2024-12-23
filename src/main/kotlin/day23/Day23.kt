@@ -4,6 +4,7 @@ import common.resourceFile
 
 fun main() {
     part1("/day23.txt")
+    part2("/day23.txt")
 }
 
 fun part1(name: String) {
@@ -41,6 +42,36 @@ fun part1(name: String) {
     }
 
     println(triples.size)
+}
+
+fun part2(name: String) {
+    val cons = readInput(name)
+
+    val comps = cons.flatMap { con -> listOf(con.a, con.b) }.distinct().toMutableList()
+
+    val conMap = mutableMapOf<Computer, Set<Computer>>()
+    for (con in cons) {
+        conMap.merge(con.a, setOf(con.b)) { s1, s2 -> s1 + s2 }
+        conMap.merge(con.b, setOf(con.a)) { s1, s2 -> s1 + s2 }
+    }
+
+    val cliques = mutableSetOf<MutableSet<Computer>>()
+    for (comp in comps) {
+        cliques.add(mutableSetOf(comp))
+    }
+
+    for (i in 0..<comps.size) {
+        val comp = comps[i]
+        println("${i + 1} / ${comps.size}")
+        for (clique in cliques) {
+            if (clique.all { compInClique -> conMap[compInClique]!!.contains(comp) }) {
+                clique.add(comp)
+            }
+        }
+    }
+
+    val maxClique = cliques.sortedByDescending { it.size }[0]
+    println(maxClique.map { it.name }.sorted().joinToString(","))
 }
 
 fun readInput(name: String): List<Connection> {
