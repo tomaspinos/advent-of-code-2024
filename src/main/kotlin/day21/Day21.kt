@@ -14,7 +14,7 @@ fun main() {
         listOf(_5, _8, _6, A)
     )
     part1(input)
-    //part2(input)
+    part2(input)
 }
 
 fun part1(codes: List<List<Key>>) {
@@ -53,19 +53,23 @@ val dirKeyboard = mapOf(
 
 val numPaths: MutableMap<Key, MutableMap<Key, MutableList<Path>>> = mutableMapOf()
 val dirPaths: MutableMap<Key, MutableMap<Key, MutableList<Path>>> = mutableMapOf()
+var countCache: MutableMap<Pair<List<Key>, Int>, Long> = mutableMapOf()
 
 fun count(code: List<Key>, level: Int, paths: Map<Key, Map<Key, List<Path>>>): Long {
-    println("$code, $level")
+    //println("$code, $level")
     if (level == 0) {
         return code.size.toLong()
     } else {
+        if (countCache[code to level] != null) return countCache[code to level]!!
         val keyToKeyTransitions = (listOf(A) + code).zipWithNext()
-        return keyToKeyTransitions.sumOf { (from, to) ->
+        val count = keyToKeyTransitions.sumOf { (from, to) ->
             val pathsFromTo = paths[from]!![to]!!
             pathsFromTo.minOf { path ->
                 count(path.extend(A).keys, level - 1, dirPaths)
             }
         }
+        countCache[code to level] = count
+        return count
     }
 }
 
