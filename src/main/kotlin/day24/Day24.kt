@@ -55,7 +55,11 @@ fun readInput(name: String): Pair<List<ValueAssignment>, List<GateAssignment>> {
     return Pair(valueAssignments, gateAssignments)
 }
 
-enum class LogicalOp { AND, OR, XOR }
+enum class LogicalOp(val op: (Int, Int) -> Int) {
+    AND({ a, b -> a and b }),
+    OR({ a, b -> a or b }),
+    XOR({ a, b -> a xor b })
+}
 
 data class Wire(val name: String) : Comparable<Wire> {
     override fun compareTo(other: Wire): Int {
@@ -91,10 +95,6 @@ class FromGateAssignment(val assignment: GateAssignment, suppliers: Map<Wire, Va
     override fun getValue(): Int {
         val left = suppliers[assignment.gate.left]!!.getValue()
         val right = suppliers[assignment.gate.right]!!.getValue()
-        return when (assignment.gate.op) {
-            LogicalOp.AND -> left and right
-            LogicalOp.OR -> left or right
-            LogicalOp.XOR -> left xor right
-        }
+        return assignment.gate.op.op(left, right)
     }
 }
