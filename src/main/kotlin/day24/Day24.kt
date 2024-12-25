@@ -62,13 +62,9 @@ enum class LogicalOp(val op: (Int, Int) -> Int) {
 }
 
 data class Wire(val name: String) : Comparable<Wire> {
-    override fun compareTo(other: Wire): Int {
-        return name.compareTo(other.name)
-    }
+    override fun compareTo(other: Wire): Int = name.compareTo(other.name)
 
-    override fun toString(): String {
-        return name
-    }
+    override fun toString(): String = name
 }
 
 data class Gate(val left: Wire, val right: Wire, val op: LogicalOp)
@@ -85,9 +81,7 @@ abstract class ValueSupplier(val suppliers: Map<Wire, ValueSupplier>) {
 
 class FromValueAssignment(val assignment: ValueAssignment, suppliers: Map<Wire, ValueSupplier>) :
     ValueSupplier(suppliers) {
-    override fun getValue(): Int {
-        return assignment.value
-    }
+    override fun getValue(): Int = assignment.value
 }
 
 class FromGateAssignment(val assignment: GateAssignment, suppliers: Map<Wire, ValueSupplier>) :
