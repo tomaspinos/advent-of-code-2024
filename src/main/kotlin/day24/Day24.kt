@@ -23,13 +23,11 @@ fun part1(name: String) {
     println(binaryString)
     println(binaryString.toLong(2))
 
-    part2(valueAssignments, gateAssignments, valueSuppliers, zValueSuppliers)
+    part2(gateAssignments, zValueSuppliers)
 }
 
 fun part2(
-    valueAssignments: List<ValueAssignment>,
     gateAssignments: List<GateAssignment>,
-    valueSuppliers: Map<Wire, ValueSupplier>,
     zValueSuppliers: Map<Wire, ValueSupplier>
 ) {
     gateAssignments.forEach {
@@ -115,13 +113,10 @@ class FromGateAssignment(val assignment: GateAssignment, suppliers: Map<Wire, Va
     override fun expression(subst: MutableMap<Triple<String, String, LogicalOp>, String>): String {
         val left = suppliers[assignment.left]!!.expression(subst)
         val right = suppliers[assignment.right]!!.expression(subst)
-//        if (left.startsWith("x") && right.startsWith("y")) {
-//            val xyIndex = left.substring(1)
-//            if (right.endsWith(xyIndex)) {
-//                return subst.getOrPut(Triple(left, right, assignment.op)) { "${assignment.op.name.lowercase()}${xyIndex}" }
-//            }
-//        }
-        return "${assignment.op.name.lowercase()}($left, $right)"
-        //return "($left ${assignment.op.name.lowercase()} $right)"
+        if (right.startsWith("xor")) {
+            return "${assignment.op.name.lowercase()}($right, $left)"
+        } else {
+            return "${assignment.op.name.lowercase()}($left, $right)"
+        }
     }
 }
